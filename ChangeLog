@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Oct 27 07:48:16 PDT 2004
+burstFit/src/test
+
+Removed Files:
+	.test_burstFit.cxx.swp 
+Log Message:
+Remove swap file from repository.
+
+    *
+------------------------------------------------------------
 User: peachey  Thu Oct 21 11:56:36 PDT 2004
 burstFit
 

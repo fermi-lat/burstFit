@@ -1,0 +1,9 @@
+package burstFit
+
+use CLHEP * IExternal
+use st_app *
+use st_facilities *
+use tip *
+
+private
+application test_burstFit test/*.cxx

@@ -1,0 +1,12 @@
+/** \file release.notes
+    \brief Temporal fitting package.
+    \author Lawrence Brown, HEASARC/GSSC
+            James Peachey, HEASARC/GSSC
+
+\verbatim
+--------------------------------------------------------------------------------
+21-oct-2004    v0     JP  Initial import, test code and test files only.
+--------------------------------------------------------------------------------
+\endverbatim
+
+*/

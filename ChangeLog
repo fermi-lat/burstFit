@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Oct 27 08:16:52 PDT 2004
+burstFit/src
+
+Added Files:
+	BayesianBlocker.cxx 
+Log Message:
+Move BayesianBlocker class out of test code into its own files.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Oct 27 08:16:51 PDT 2004
 burstFit/burstFit
 

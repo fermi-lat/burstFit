@@ -1,0 +1,36 @@
+------------------------------------------------------------
+User: peachey  Thu Oct 21 11:56:36 PDT 2004
+burstFit
+
+Log Message:
+Initial import of A7 (temporal analysis) package.
+
+Status:
+
+Vendor Tag:	GLAST
+Release Tags:	v0
+		
+N burstFit/cmt/requirements
+N burstFit/src/test/.test_burstFit.cxx.swp
+N burstFit/src/test/test_burstFit.cxx
+N burstFit/data/binData1039.fits
+N burstFit/data/binData1406.fits
+N burstFit/data/binData2193.fits
+N burstFit/data/binData2197.fits
+N burstFit/data/binData2387.fits
+N burstFit/data/binData2665.fits
+N burstFit/data/binData2711.fits
+N burstFit/data/binData2863.fits
+N burstFit/data/binData3256.fits
+N burstFit/data/binData3257.fits
+N burstFit/data/binData5387.fits
+N burstFit/data/binData5415.fits
+N burstFit/data/binData6147.fits
+N burstFit/data/binData6414.fits
+N burstFit/data/binData6504.fits
+N burstFit/data/binData764.fits
+N burstFit/doc/release.notes
+
+No conflicts created by this import
+
+    *

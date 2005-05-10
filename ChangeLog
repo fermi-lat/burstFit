@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Tue May 10 09:44:03 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Flesh out unit test to include BayesianBinner, and to test code to
+identify peaks and valleys.
+
+    *
+------------------------------------------------------------
 User: peachey  Tue May 10 09:35:06 PDT 2005
 burstFit/src
 

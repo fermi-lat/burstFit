@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Tue May 10 09:45:30 PDT 2005
+burstFit/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Use st_graph for plotting, evtbin for Binner, and use standard ST_library pattern.
+
+    *
+------------------------------------------------------------
 User: peachey  Tue May 10 09:44:03 PDT 2005
 burstFit/src/test
 

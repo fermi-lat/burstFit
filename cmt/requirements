@@ -1,9 +1,11 @@
 package burstFit
 
 use CLHEP * IExternal
+use STpolicy *
+use evtbin *
 use st_app *
 use st_facilities *
+use st_graph *
 use tip *
 
-private
-application test_burstFit test/*.cxx
+apply_pattern ST_library option="-no_share"

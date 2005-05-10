@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Tue May 10 09:35:06 PDT 2005
+burstFit/src
+
+Added Files:
+	BayesianBinner.cxx 
+Log Message:
+Add BayesianBinner class, which will eventually move to evtbin, and which
+performs the Bayesian block bin definitions for binned data.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 10 09:35:06 PDT 2005
 burstFit/burstFit
 
 Added Files:

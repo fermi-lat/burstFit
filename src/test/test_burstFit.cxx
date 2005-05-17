@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "burstFit/BayesianBinner.h"
-#include "burstFit/BayesianBlocker.h"
+
+#include "evtbin/Hist1D.h"
 
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
@@ -53,8 +54,11 @@ void TestBurstFitApp::run() {
 }
 
 void TestBurstFitApp::testFile(const std::string & file_name) {
+  //using namespace burstFit;
   using namespace st_facilities;
   using namespace tip;
+
+  typedef std::vector<double> vec_t;
 
   // Write file name.
   std::cout << "Test-processing " << file_name << std::endl;
@@ -62,21 +66,29 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
   // Open input file.
   std::auto_ptr<const Table> table(IFileSvc::instance().readTable(Env::appendFileName(m_data_dir, file_name), "1"));
 
-  std::vector<double> cell_pop(table->getNumRecords());
-  std::vector<double>::iterator out_itor = cell_pop.begin();
-  std::vector<double> domain(cell_pop.size());
-  std::vector<double>::iterator domain_itor = domain.begin();
-  Table::ConstIterator in_itor = table->begin();
-  double cell_size = (*in_itor)["CELLSIZE"].get();
-  for (Table::ConstIterator in_itor = table->begin(); in_itor != table->end(); ++in_itor, ++out_itor, ++domain_itor) {
-    *domain_itor = (out_itor - cell_pop.begin()) * cell_size;
-    *out_itor = (*in_itor)["SUM"].get();
+  // Cell populations (original data Y axis).
+  vec_t cell_pop(table->getNumRecords());
+
+  // Time domain (original data X axis).
+  vec_t domain(cell_pop.size());
+
+  // Input to the Bayesian binner is the original data X values expressed as a sequence of intervals.
+  evtbin::BayesianBinner::IntervalCont_t intervals(cell_pop.size());
+
+  // Output index used to populate the several data arrays.
+  vec_t::size_type out_index = 0;
+
+  // Iterate over input table.
+  double time = 0.;
+  for (Table::ConstIterator in_itor = table->begin(); in_itor != table->end(); ++in_itor, ++out_index) {
+    domain[out_index] = time;
+    time += (*in_itor)["CELLSIZE"].get();
+    intervals[out_index] = evtbin::Binner::Interval(domain[out_index], time);
+    cell_pop[out_index] = (*in_itor)["SUM"].get();
   }
 
   // Compute blocking needed.
-  evtbin::BayesianBinner bb("SUM", cell_size, cell_pop.begin(), cell_pop.end());
-
-  typedef std::vector<double> vec_t;
+  evtbin::BayesianBinner bb(intervals, cell_pop.begin(), "SUM");
 
   // This is based on blocker.pro:
   // tt_blocks = CPs*binscale                  ;convert the CPs to seconds
@@ -94,33 +106,17 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
   // Fractional threshold used to determine significant deviations from background.
   double threshold_fract = .05;
 
-  // Create arrays to hold the blocks.
-  // These play the role of tt_blocks and yy_blocks in pulsefitter6.pro.
-  vec_t time_start(bb.getNumBins(), 0.);
-  vec_t time_stop(bb.getNumBins(), 0.);
-  vec_t block(bb.getNumBins(), 0.);
-
-  // For each cell, bin it into a block, using the width of the block to compute the mean.
+  // Bin profile into a histogram.
+  evtbin::Hist1D hist(bb);
   for (vec_t::size_type index = 0; index != cell_pop.size(); ++index) {
-    // Determine to which block this cell belongs.
-    long block_index = bb.computeIndex(index);
-
-    // Add the cell population to this block. Note: block holds the total number of counts at this point.
-    block[block_index] += cell_pop[index];
-  }
-  
-  // Loop over the blocks, computing the time for each block and also computing mean for each block from total counts.
-  for (long block_index = 0; block_index != bb.getNumBins(); ++block_index) {
-    evtbin::Binner::Interval interval = bb.getInterval(block_index);
-
-    // Start/stop time is the start/stop point of the interval, scaled by the cell size.
-    time_start[block_index] = cell_size * interval.begin();
-    time_stop[block_index] = cell_size * interval.end();
-
-    // Convert block array into the mean number of counts by dividing by the block width.
-    block[block_index] /= interval.width();
+    long block_index = bb.computeIndex(domain[index]);
+    
+    // Weight for histogram is the cell population multiplied by the original bin width and divided by the bayesian block width.
+    hist.fillBin(domain[index],
+      cell_pop[index] * (intervals[index].end() - intervals[index].begin()) / bb.getInterval(block_index).width());
   }
 
+#if 0
   // The following is based on findpvs3.pro:
   if (block.size() >= 3) {
     // First and last block are used to set a background level, used to determine thresholds.
@@ -181,12 +177,27 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
 
       // Last valley is the block after the last decay.
       valley_index.push_back(index);
+
     } else {
 std::clog << "No significant peaks." << std::endl;
     }
 
   } else {
 std::clog << "Fewer than 3 blocks." << std::endl;
+  }
+#endif
+
+  // Create arrays to hold the block domain for plotting purposes.
+  vec_t time_start(bb.getNumBins(), 0.);
+  vec_t time_stop(bb.getNumBins(), 0.);
+
+  // Loop over the blocks, storing the start/stop time for each.
+  for (long block_index = 0; block_index != bb.getNumBins(); ++block_index) {
+    evtbin::Binner::Interval interval = bb.getInterval(block_index);
+
+    // Start/stop time is the start/stop point of the interval, scaled by the cell size.
+    time_start[block_index] = interval.begin();
+    time_stop[block_index] = interval.end();
   }
 
   // Plot blocks and data:
@@ -208,11 +219,11 @@ std::clog << "Fewer than 3 blocks." << std::endl;
     // Overplot the blocks.
     std::auto_ptr<st_graph::IPlot> block_plot(engine.createPlot(pf.get(), "hist",
       st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
-      st_graph::PointSequence<vec_t::iterator>(block.begin(), block.end())));
+      st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist.begin(), hist.end())));
 
     engine.run();
-  } catch (const std::exception &) {
-    std::clog << "Could not display plots." << std::endl;
+  } catch (const std::exception & x) {
+    std::clog << "Could not display test plots:" << x.what() << std::endl;
     // Ignore errors with the plotting.
   }
 

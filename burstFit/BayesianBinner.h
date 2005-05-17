@@ -8,42 +8,24 @@
 #include <string>
 #include <vector>
 
-#include "evtbin/Binner.h"
+#include "evtbin/OrderedBinner.h"
 
 namespace evtbin {
   /** \class BayesianBinner
       \brief Declaration of a linearly uniform interval binner.
   */
-  class BayesianBinner : public Binner {
+  class BayesianBinner : public OrderedBinner {
     public:
-      typedef std::deque<double> deque_t;
-      typedef std::vector<double> vec_t;
-
       /** \brief Construct a linear binner object.
-          \param interval_begin Left boundary of the binning interval.
-          \param interval_end Right boundary of the binning interval.
-          \param bin_size The size of the bins.
-          \param name Optional name of the quantity being binned.
+//TODO update doc
       */
       template <typename Itor>
-      BayesianBinner(const std::string & name, double cell_size, Itor begin, Itor end): Binner(name),
-        m_cell_size(end - begin, cell_size), m_cell_pop(begin, end), m_cells() { computeBlocks(); }
+      BayesianBinner(const IntervalCont_t & intervals, Itor cell_begin, const std::string & name = std::string()):
+        OrderedBinner(IntervalCont_t(), name), m_cell_pop(cell_begin, cell_begin + intervals.size()) {
+        computeBlocks(intervals);
+      }
 
       virtual ~BayesianBinner() throw();
-
-      /** \brief Return the bin number for the given value.
-          \param value The value being binned.
-      */
-      virtual long computeIndex(double value) const;
-
-      /** \brief Return the number of bins currently defined.
-      */
-      virtual long getNumBins() const;
-
-      /** \brief Return the interval spanned by the given bin.
-          \param index The index indicating the bin number.
-      */
-      virtual Binner::Interval getInterval(long index) const;
 
       /** \brief Create copy of this object.
       */
@@ -53,16 +35,14 @@ namespace evtbin {
       static const int s_ncp_prior = 6;
       /** \brief Perform the Bayesian Block procedure to determine the block definitions.
       */
-      void computeBlocks();
+      void computeBlocks(const IntervalCont_t & intervals);
 
       /** \brief Internal utility to compute the log posterior (Bayes factor).
       */
       void computeLogProb(const std::deque<double> & rev_csize, const std::deque<double> & rev_cpop,
         std::vector<double> & result) const;
 
-      std::vector<double> m_cell_size;
       std::vector<double> m_cell_pop;
-      std::vector<double> m_cells;
   };
 
 }

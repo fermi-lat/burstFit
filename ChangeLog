@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Tue May 17 06:44:50 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Use OrderedBinner and Hist1D instead of doing the binning by hand,
+so that the input data can use a more conventional time domain.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 17 06:44:50 PDT 2005
 burstFit/src
 
 Modified Files:

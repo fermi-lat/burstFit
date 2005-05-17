@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Tue May 17 06:44:49 PDT 2005
+burstFit/burstFit
+
+Modified Files:
+	BayesianBinner.h 
+Log Message:
+Use OrderedBinner and Hist1D instead of doing the binning by hand,
+so that the input data can use a more conventional time domain.
+
+    *
+------------------------------------------------------------
 User: peachey  Tue May 10 09:45:30 PDT 2005
 burstFit/cmt
 

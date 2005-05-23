@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Mon May 23 06:56:54 PDT 2005
+burstFit/src
+
+Added Files:
+	ProfileFitter.cxx 
+Log Message:
+Add ProfileFitter class, for handling fit process.
+
+    *
+------------------------------------------------------------
+User: peachey  Mon May 23 06:56:54 PDT 2005
 burstFit/burstFit
 
 Added Files:

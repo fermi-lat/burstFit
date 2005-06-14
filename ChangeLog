@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Tue Jun 14 10:36:12 PDT 2005
+burstFit/src
+
+Removed Files:
+	BayesianBlocker.cxx ProfileFitter.cxx 
+Log Message:
+Removing unused classes.
+
+    *
+------------------------------------------------------------
 User: peachey  Tue Jun 14 10:36:11 PDT 2005
 burstFit/burstFit
 

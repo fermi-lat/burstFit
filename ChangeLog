@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 15 09:26:53 PDT 2005
+burstFit/burstFit
+
+Added Files:
+	BurstModel.h 
+Log Message:
+Add BurstModel class, which derives from optimizers::Function and
+represents a burst as a sum of pulses with exponential decays and
+sharper-than-exponential rises.
+
+    *
+------------------------------------------------------------
 User: peachey  Tue Jun 14 10:36:12 PDT 2005
 burstFit/src
 

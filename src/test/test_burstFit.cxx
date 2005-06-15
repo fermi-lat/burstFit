@@ -9,9 +9,15 @@
 #include <string>
 #include <vector>
 
-#include "burstFit/BayesianBinner.h"
+#include "burstFit/BurstModel.h"
+#include "burstFit/NegativeStat.h"
 
+#include "evtbin/BayesianBinner.h"
 #include "evtbin/Hist1D.h"
+
+#include "optimizers/ChiSq.h"
+#include "optimizers/Minuit.h"
+#include "optimizers/dArg.h"
 
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
@@ -54,7 +60,7 @@ void TestBurstFitApp::run() {
 }
 
 void TestBurstFitApp::testFile(const std::string & file_name) {
-  //using namespace burstFit;
+  using namespace burstFit;
   using namespace st_facilities;
   using namespace tip;
 
@@ -103,9 +109,6 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
   // endfor
   // yy_blocks = [yy_blocks, 0.]
 
-  // Fractional threshold used to determine significant deviations from background.
-  double threshold_fract = .05;
-
   // Bin profile into a histogram.
   evtbin::Hist1D hist(bb);
   for (vec_t::size_type index = 0; index != cell_pop.size(); ++index) {
@@ -115,77 +118,6 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
     hist.fillBin(domain[index],
       cell_pop[index] * (intervals[index].end() - intervals[index].begin()) / bb.getInterval(block_index).width());
   }
-
-#if 0
-  // The following is based on findpvs3.pro:
-  if (block.size() >= 3) {
-    // First and last block are used to set a background level, used to determine thresholds.
-    double background = (block.front() + block.back()) / 2.;
-
-    // Also get maximum block value, which plays a role in determining whether threshold is exceeded.
-    double max_block = *std::max_element(block.begin(), block.end());
-
-    // TODO: Double check this with experts: this test seems like it will always pass. Compare to findpvs3.pro.
-    // Threshold for a PEAK counting as "significant" is that it exceed background by > threshold based on
-    // the maximum BLOCK value. (Note: maximum peak != maximum block in general.)
-    double threshold = threshold_fract * (max_block - background);
-
-    // First look for peaks, which are by definition any/all local maxima.
-    // Container to hold the indices of peak locations.
-    std::vector<vec_t::size_type> peak_index;
-    bool significant_peaks = false;
-    double total_peak = 0.;
-    for (vec_t::size_type index = 1; index != block.size() - 1; ++index) {
-      if (block[index - 1] < block[index] && block[index] > block[index + 1]) {
-        // All local maxima count as peaks.
-        peak_index.push_back(index);
-
-        // Only some maxima count as significant for purposes of determining whether to continue.
-        if (block[index] - background > threshold) significant_peaks = true;
-
-        // Compute the sum of all peaks for use below.
-        total_peak += block[index];
-      }
-    }
-
-    if (significant_peaks) {
-      // Container to hold the indices of valley locations.
-      std::vector<vec_t::size_type> valley_index;
-
-      // Determine the average peak height for use in setting the threshold for valleys.
-      double average_peak = total_peak / peak_index.size() - background;
-
-      // Threshold is a fraction of the average peak height.
-      threshold = threshold_fract * average_peak;
-
-      // Special handling for the 0th valley.
-      // Look for first rise; skip all blocks before the first peak which are below threshold.
-      vec_t::size_type index;
-      for (index = 1; index != peak_index.front() && block[index] - block.front() <= threshold; ++index) {}
-
-      // 0th valley is the block before the first rise.
-      valley_index.push_back(index - 1);
-
-      // Handle interjacent valleys, which are minima between the maxima.
-      for (std::vector<vec_t::size_type>::iterator itor = peak_index.begin(); itor != peak_index.end() - 1; ++itor) {
-        valley_index.push_back(std::min_element(block.begin() + *itor, block.begin() + *(itor + 1)) - block.begin());
-      }
-
-      // Special handling for the last valley.
-      // Look for the last decay, that is the first block after the last peak which is below threshold.
-      for (index = peak_index.back() + 1; index != block.size() - 1 && block[index] - block.back() > threshold; ++index) {}
-
-      // Last valley is the block after the last decay.
-      valley_index.push_back(index);
-
-    } else {
-std::clog << "No significant peaks." << std::endl;
-    }
-
-  } else {
-std::clog << "Fewer than 3 blocks." << std::endl;
-  }
-#endif
 
   // Create arrays to hold the block domain for plotting purposes.
   vec_t time_start(bb.getNumBins(), 0.);
@@ -198,6 +130,52 @@ std::clog << "Fewer than 3 blocks." << std::endl;
     // Start/stop time is the start/stop point of the interval, scaled by the cell size.
     time_start[block_index] = interval.begin();
     time_stop[block_index] = interval.end();
+  }
+
+  // Create a model for this data set.
+  BurstModel model(&hist);
+
+  // Compute first peak guess as a function of the domain.
+  vec_t guess(domain.size());
+
+  for (vec_t::size_type index = 0; index != domain.size(); ++index) {
+    optimizers::dArg arg(domain[index]);
+    guess[index] = model.value(arg);
+  }
+
+  optimizers::ChiSq chi_sq(domain, cell_pop, &model);
+  NegativeStat stat(&chi_sq);
+
+  optimizers::Minuit opt(stat);
+
+  std::vector<double> coeff;
+  model.getParamValues(coeff);
+  std::clog << "Before fit:" << std::endl;
+  for (std::vector<double>::iterator itor = coeff.begin(); itor != coeff.end(); ++itor) {
+    std::clog << "\tPar " << itor - coeff.begin() << " is " << *itor << std::endl;
+  }
+  std::clog << "\tChiSq is " << chi_sq.value() / chi_sq.dof() << std::endl;
+
+  bool converged = false;
+  try {
+    opt.find_min();
+    converged = true;
+  } catch (const std::exception & x) {
+    std::clog << x.what() << std::endl;
+  }
+
+  std::clog << "After fit:" << std::endl;
+  coeff.clear();
+  model.getParamValues(coeff);
+  for (std::vector<double>::iterator itor = coeff.begin(); itor != coeff.end(); ++itor) {
+    std::clog << "\tPar " << itor - coeff.begin() << " is " << *itor << std::endl;
+  }
+  std::clog << "\tChiSq is " << chi_sq.value() / chi_sq.dof() << std::endl;
+
+  vec_t fit(domain.size());
+  for (vec_t::size_type index = 0; index != domain.size(); ++index) {
+    optimizers::dArg arg(domain[index]);
+    fit[index] = model.value(arg);
   }
 
   // Plot blocks and data:
@@ -217,9 +195,25 @@ std::clog << "Fewer than 3 blocks." << std::endl;
       st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end())));
 
     // Overplot the blocks.
+#if 0
     std::auto_ptr<st_graph::IPlot> block_plot(engine.createPlot(pf.get(), "hist",
       st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
       st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist.begin(), hist.end())));
+#endif
+
+#if 0
+    // Overplot the initial guess.
+    std::auto_ptr<st_graph::IPlot> guess_plot(engine.createPlot(pf.get(), "hist",
+      st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
+      st_graph::PointSequence<vec_t::iterator>(guess.begin(), guess.end())));
+#endif
+
+    // Overplot the final fit if it converged.
+//    if (converged) {
+      std::auto_ptr<st_graph::IPlot> fit_plot(engine.createPlot(pf.get(), "hist",
+        st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
+        st_graph::PointSequence<vec_t::iterator>(fit.begin(), fit.end())));
+//    }
 
     engine.run();
   } catch (const std::exception & x) {

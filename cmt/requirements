@@ -3,6 +3,7 @@ package burstFit
 use CLHEP * IExternal
 use STpolicy *
 use evtbin *
+use optimizers *
 use st_app *
 use st_facilities *
 use st_graph *

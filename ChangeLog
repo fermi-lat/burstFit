@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 15 09:28:18 PDT 2005
+burstFit/burstFit
+
+Removed Files:
+	BayesianBinner.h 
+Log Message:
+Moved to evtbin.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jun 15 09:27:59 PDT 2005
 burstFit/src
 

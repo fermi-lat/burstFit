@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 15 09:30:01 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Modify test code to perform the complete Bayesian analysis
+including fitting the pulse shapes for the test data.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jun 15 09:28:18 PDT 2005
 burstFit/src
 

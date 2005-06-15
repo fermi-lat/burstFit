@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Jun 15 09:30:52 PDT 2005
+burstFit/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Use optimizers.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jun 15 09:30:01 PDT 2005
 burstFit/src/test
 

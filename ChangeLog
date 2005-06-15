@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Wed Jun 15 09:27:59 PDT 2005
+burstFit/src
+
+Added Files:
+	NegativeStat.cxx 
+Log Message:
+Add NegativeStat class, which flips the sign of any statistic,
+to allow min/max to be chosen.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:27:59 PDT 2005
 burstFit/burstFit
 
 Added Files:

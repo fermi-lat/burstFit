@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "optimizers/Function.h"
+#include "optimizers/Parameter.h"
 
 namespace evtbin {
   class Hist1D;
@@ -15,6 +16,10 @@ namespace evtbin {
 namespace optimizers {
   class Arg;
   class Parameter;
+}
+
+namespace st_stream {
+  class OStream;
 }
 
 namespace burstFit {
@@ -29,7 +34,7 @@ namespace burstFit {
       typedef std::vector<double> DataCont_t;
       typedef DataCont_t::size_type Index_t;
       typedef std::vector<Index_t> IndexCont_t;
-      typedef std::vector<double> FitPar_t;
+      typedef std::vector<optimizers::Parameter> FitPar_t;
 
       BurstModel(const FitPar_t & parameter);
 
@@ -41,6 +46,8 @@ namespace burstFit {
 
       virtual optimizers::Function * clone() const;
 
+      virtual st_stream::OStream & write(st_stream::OStream & os) const;
+
     protected:
       static const double s_fract_threshold;
 
@@ -48,12 +55,12 @@ namespace burstFit {
 
       virtual void guessInitialParameters(const evtbin::Hist1D * hist, FitPar_t & parameter) const;
 
-      virtual void setParameters(const FitPar_t & parameter);
-
     private:
       IndexCont_t m_peak_index;
       IndexCont_t m_valley_index;
   };
+
+  st_stream::OStream & operator <<(st_stream::OStream & os, const BurstModel & model);
 
 }
 #endif

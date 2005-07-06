@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Jul  6 10:06:48 PDT 2005
+burstFit/src/gtburstfit
+
+Added Files:
+	gtburstfit.cxx 
+Log Message:
+Add main gtburstfit executable.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jul  6 10:06:23 PDT 2005
 burstFit/src/test
 

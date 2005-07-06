@@ -19,6 +19,7 @@
 #include "optimizers/Minuit.h"
 #include "optimizers/dArg.h"
 
+#include "st_app/AppParGroup.h"
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
 
@@ -29,8 +30,19 @@
 
 #include "st_facilities/Env.h"
 
+#include "st_stream/Stream.h"
+
 #include "tip/IFileSvc.h"
 #include "tip/Table.h"
+
+namespace {
+  std::ostream & operator <<(std::ostream & os, const burstFit::BurstModel & model) {
+    st_stream::OStream st_stream_os(false);
+    st_stream_os.connect(os);
+    st_stream_os << model;
+    return os;
+  }
+}
 
 class TestBurstFitApp : public st_app::StApp {
   public:
@@ -38,7 +50,7 @@ class TestBurstFitApp : public st_app::StApp {
 
     virtual void run();
 
-    virtual void testFile(const std::string & file_name);
+    virtual void testFile(const std::string & file_name, bool plot);
 
   private:
     std::string m_data_dir;
@@ -48,18 +60,24 @@ void TestBurstFitApp::run() {
   using namespace st_facilities;
   m_data_dir = Env::getDataDir("burstFit");
 
+  // Prompt for parameters.
+  st_app::AppParGroup & pars(getParGroup());
+  pars.Prompt();
+
+  bool plot = pars["plot"];
+
   // Names of test files.
-  const char * files[] = { "binData764.fits", "binData1039.fits", "binData1406.fits", "binData2193.fits", "binData2197.fits",
-    "binData2387.fits", "binData2665.fits", "binData2711.fits", "binData2863.fits", "binData3256.fits",
+  const char * files[] = { "n0_p05.lc", "binData764.fits", "binData1039.fits", "binData1406.fits", "binData2193.fits",
+    "binData2197.fits", "binData2387.fits", "binData2665.fits", "binData2711.fits", "binData2863.fits", "binData3256.fits",
     "binData3257.fits", "binData5387.fits", "binData5415.fits", "binData6147.fits", "binData6414.fits",
     "binData6504.fits" };
 
   // Test them all.
   for (const char ** f_p = files; f_p != files + sizeof(files)/sizeof(const char *); ++f_p)
-    testFile(*f_p);
+    testFile(*f_p, plot);
 }
 
-void TestBurstFitApp::testFile(const std::string & file_name) {
+void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
   using namespace burstFit;
   using namespace st_facilities;
   using namespace tip;
@@ -67,7 +85,7 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
   typedef std::vector<double> vec_t;
 
   // Write file name.
-  std::cout << "Test-processing " << file_name << std::endl;
+  std::clog << "Test-processing " << file_name << std::endl;
 
   // Open input file.
   std::auto_ptr<const Table> table(IFileSvc::instance().readTable(Env::appendFileName(m_data_dir, file_name), "1"));
@@ -84,17 +102,40 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
   // Output index used to populate the several data arrays.
   vec_t::size_type out_index = 0;
 
-  // Iterate over input table.
+  // Determine names of fields containing the cell size and content.
+  std::string cell_size_field;
+  try {
+    table->getFieldIndex("CELLSIZE");
+    cell_size_field = "CELLSIZE";
+  } catch (const std::exception &) {
+  }
+  if (cell_size_field.empty()) {
+    table->getFieldIndex("TIMEDEL");
+    cell_size_field = "TIMEDEL";
+  }
+
+  std::string cell_pop_field;
+  try {
+    table->getFieldIndex("SUM");
+    cell_pop_field = "SUM";
+  } catch (const std::exception &) {
+  }
+  if (cell_pop_field.empty()) {
+    table->getFieldIndex("COUNTS");
+    cell_pop_field = "COUNTS";
+  }
+
+  // Iterate over input table, extract data.
   double time = 0.;
   for (Table::ConstIterator in_itor = table->begin(); in_itor != table->end(); ++in_itor, ++out_index) {
     domain[out_index] = time;
-    time += (*in_itor)["CELLSIZE"].get();
+    time += (*in_itor)[cell_size_field].get();
     intervals[out_index] = evtbin::Binner::Interval(domain[out_index], time);
-    cell_pop[out_index] = (*in_itor)["SUM"].get();
+    cell_pop[out_index] = (*in_itor)[cell_pop_field].get();
   }
 
   // Compute blocking needed.
-  evtbin::BayesianBinner bb(intervals, cell_pop.begin(), "SUM");
+  evtbin::BayesianBinner bb(intervals, cell_pop.begin(), cell_pop_field);
 
   // This is based on blocker.pro:
   // tt_blocks = CPs*binscale                  ;convert the CPs to seconds
@@ -143,18 +184,21 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
     guess[index] = model.value(arg);
   }
 
+  // Create optimizing objective function.
   optimizers::ChiSq chi_sq(domain, cell_pop, &model);
+
+  // The function to MAXIMIZE is the negative of the chi_sq.
   NegativeStat stat(&chi_sq);
 
+  // Create optimizer for the objective function.
   optimizers::Minuit opt(stat);
 
+  // Display fit parameters before fit.
   std::vector<double> coeff;
   model.getParamValues(coeff);
-  std::clog << "Before fit:" << std::endl;
-  for (std::vector<double>::iterator itor = coeff.begin(); itor != coeff.end(); ++itor) {
-    std::clog << "\tPar " << itor - coeff.begin() << " is " << *itor << std::endl;
-  }
-  std::clog << "\tChiSq is " << chi_sq.value() / chi_sq.dof() << std::endl;
+  std::clog << "After initial guess but before any fitting, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
+  std::clog << "Parameters are:" << std::endl;
+  std::clog << model << "\n" << std::endl;
 
   bool converged = false;
   try {
@@ -164,13 +208,12 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
     std::clog << x.what() << std::endl;
   }
 
-  std::clog << "After fit:" << std::endl;
-  coeff.clear();
+  coeff.clear(); // Just in case things are malfunctioning badly.
   model.getParamValues(coeff);
-  for (std::vector<double>::iterator itor = coeff.begin(); itor != coeff.end(); ++itor) {
-    std::clog << "\tPar " << itor - coeff.begin() << " is " << *itor << std::endl;
-  }
-  std::clog << "\tChiSq is " << chi_sq.value() / chi_sq.dof() << std::endl;
+
+  std::clog << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
+  std::clog << "Parameters are:" << std::endl;
+  std::clog << model << "\n" << std::endl;
 
   vec_t fit(domain.size());
   for (vec_t::size_type index = 0; index != domain.size(); ++index) {
@@ -178,49 +221,40 @@ void TestBurstFitApp::testFile(const std::string & file_name) {
     fit[index] = model.value(arg);
   }
 
-  // Plot blocks and data:
-  try {
-    // Get plot engine.
-    st_graph::Engine & engine(st_graph::Engine::instance());
-
-    // Create main frame.
-    std::auto_ptr<st_graph::IFrame> mf(engine.createMainFrame(0, 600, 400, "test_burstFit"));
-
-    // Create plot frame.
-    std::auto_ptr<st_graph::IFrame> pf(engine.createPlotFrame(mf.get(), file_name, 600, 400));
-
-    // Plot the data.
-    std::auto_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf.get(), "hist",
-      st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
-      st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end())));
-
-    // Overplot the blocks.
-#if 0
-    std::auto_ptr<st_graph::IPlot> block_plot(engine.createPlot(pf.get(), "hist",
-      st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
-      st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist.begin(), hist.end())));
-#endif
-
-#if 0
-    // Overplot the initial guess.
-    std::auto_ptr<st_graph::IPlot> guess_plot(engine.createPlot(pf.get(), "hist",
-      st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
-      st_graph::PointSequence<vec_t::iterator>(guess.begin(), guess.end())));
-#endif
-
-    // Overplot the final fit if it converged.
-//    if (converged) {
+  if (plot) {
+    // Plot blocks and/or data:
+    try {
+      // Get plot engine.
+      st_graph::Engine & engine(st_graph::Engine::instance());
+  
+      // Create main frame.
+      std::auto_ptr<st_graph::IFrame> mf(engine.createMainFrame(0, 600, 400, "test_burstFit"));
+  
+      // Create plot frame.
+      std::auto_ptr<st_graph::IFrame> pf(engine.createPlotFrame(mf.get(), file_name, 600, 400));
+  
+      // Plot the data.
+      std::auto_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf.get(), "hist",
+        st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
+        st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end())));
+  
+      // Overplot the blocks.
+      std::auto_ptr<st_graph::IPlot> block_plot(engine.createPlot(pf.get(), "hist",
+        st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
+        st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist.begin(), hist.end())));
+  
+      // Overplot the final fit.
       std::auto_ptr<st_graph::IPlot> fit_plot(engine.createPlot(pf.get(), "hist",
         st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
         st_graph::PointSequence<vec_t::iterator>(fit.begin(), fit.end())));
-//    }
-
-    engine.run();
-  } catch (const std::exception & x) {
-    std::clog << "Could not display test plots:" << x.what() << std::endl;
-    // Ignore errors with the plotting.
+  
+      engine.run();
+    } catch (const std::exception & x) {
+      std::clog << "Could not display test plots:" << x.what() << std::endl;
+      // Ignore errors with the plotting.
+    }
   }
 
 }
 
-st_app::StAppFactory<TestBurstFitApp> g_factory;
+st_app::StAppFactory<TestBurstFitApp> g_factory("test_burstFit");

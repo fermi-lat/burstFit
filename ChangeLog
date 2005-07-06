@@ -1,0 +1,391 @@
+------------------------------------------------------------
+User: peachey  Wed Jul  6 10:06:48 PDT 2005
+burstFit/src/gtburstfit
+
+Added Files:
+	gtburstfit.cxx 
+Log Message:
+Add main gtburstfit executable.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jul  6 10:06:23 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Use parameter file to determine whether to plot. Add support for GBM data,
+and tweak output.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jul  6 10:04:40 PDT 2005
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Add shift operator for outputing parameters. Use methods from
+base class optimizers::Function for parameter access. Remove diagnostic output.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jul  6 10:03:40 PDT 2005
+burstFit/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Use st_stream for output, and add main gtburstfit executable.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jul  6 10:03:18 PDT 2005
+burstFit/burstFit
+
+Modified Files:
+	BurstModel.h 
+Log Message:
+Add shift operator for outputing parameters. Use methods from
+base class optimizers::Function for parameter access.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jul  6 08:37:13 PDT 2005
+burstFit/pfiles
+
+Added Files:
+	gtburstfit.par test_burstFit.par 
+Log Message:
+Parameter files for executables.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jul  6 08:36:10 PDT 2005
+burstFit/data
+
+Added Files:
+	n0_p05.lc 
+Log Message:
+Test GBM burst data.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jul  6 08:34:55 PDT 2005
+burstFit/src/gtburstfit
+
+Log Message:
+Directory /nfs/slac/g/glast/ground/cvs/burstFit/src/gtburstfit added to the repository
+
+    *
+------------------------------------------------------------
+User: peachey  Tue Jul  5 10:14:50 PDT 2005
+burstFit/pfiles
+
+Log Message:
+Directory /nfs/slac/g/glast/ground/cvs/burstFit/pfiles added to the repository
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:30:52 PDT 2005
+burstFit/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Use optimizers.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:30:01 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Modify test code to perform the complete Bayesian analysis
+including fitting the pulse shapes for the test data.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:28:18 PDT 2005
+burstFit/src
+
+Removed Files:
+	BayesianBinner.cxx 
+Log Message:
+Moved to evtbin.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:28:18 PDT 2005
+burstFit/burstFit
+
+Removed Files:
+	BayesianBinner.h 
+Log Message:
+Moved to evtbin.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:27:59 PDT 2005
+burstFit/src
+
+Added Files:
+	NegativeStat.cxx 
+Log Message:
+Add NegativeStat class, which flips the sign of any statistic,
+to allow min/max to be chosen.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:27:59 PDT 2005
+burstFit/burstFit
+
+Added Files:
+	NegativeStat.h 
+Log Message:
+Add NegativeStat class, which flips the sign of any statistic,
+to allow min/max to be chosen.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:26:53 PDT 2005
+burstFit/src
+
+Added Files:
+	BurstModel.cxx 
+Log Message:
+Add BurstModel class, which derives from optimizers::Function and
+represents a burst as a sum of pulses with exponential decays and
+sharper-than-exponential rises.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Jun 15 09:26:53 PDT 2005
+burstFit/burstFit
+
+Added Files:
+	BurstModel.h 
+Log Message:
+Add BurstModel class, which derives from optimizers::Function and
+represents a burst as a sum of pulses with exponential decays and
+sharper-than-exponential rises.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue Jun 14 10:36:12 PDT 2005
+burstFit/src
+
+Removed Files:
+	BayesianBlocker.cxx ProfileFitter.cxx 
+Log Message:
+Removing unused classes.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue Jun 14 10:36:11 PDT 2005
+burstFit/burstFit
+
+Removed Files:
+	BayesianBlocker.h ProfileFitter.h 
+Log Message:
+Removing unused classes.
+
+    *
+------------------------------------------------------------
+User: peachey  Mon May 23 06:56:54 PDT 2005
+burstFit/src
+
+Added Files:
+	ProfileFitter.cxx 
+Log Message:
+Add ProfileFitter class, for handling fit process.
+
+    *
+------------------------------------------------------------
+User: peachey  Mon May 23 06:56:54 PDT 2005
+burstFit/burstFit
+
+Added Files:
+	ProfileFitter.h 
+Log Message:
+Add ProfileFitter class, for handling fit process.
+
+    *
+------------------------------------------------------------
+User: peachey  Mon May 23 06:49:32 PDT 2005
+burstFit/data
+
+Modified Files:
+	binData1039.fits binData1406.fits binData2193.fits 
+	binData2197.fits binData2387.fits binData2665.fits 
+	binData2711.fits binData2863.fits binData3256.fits 
+	binData3257.fits binData5387.fits binData5415.fits 
+	binData6147.fits binData6414.fits binData6504.fits 
+	binData764.fits 
+Log Message:
+Add BINSCALE keyword.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 17 06:44:50 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Use OrderedBinner and Hist1D instead of doing the binning by hand,
+so that the input data can use a more conventional time domain.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 17 06:44:50 PDT 2005
+burstFit/src
+
+Modified Files:
+	BayesianBinner.cxx 
+Log Message:
+Use OrderedBinner and Hist1D instead of doing the binning by hand,
+so that the input data can use a more conventional time domain.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 17 06:44:49 PDT 2005
+burstFit/burstFit
+
+Modified Files:
+	BayesianBinner.h 
+Log Message:
+Use OrderedBinner and Hist1D instead of doing the binning by hand,
+so that the input data can use a more conventional time domain.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 10 09:45:30 PDT 2005
+burstFit/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Use st_graph for plotting, evtbin for Binner, and use standard ST_library pattern.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 10 09:44:03 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Flesh out unit test to include BayesianBinner, and to test code to
+identify peaks and valleys.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 10 09:35:06 PDT 2005
+burstFit/src
+
+Added Files:
+	BayesianBinner.cxx 
+Log Message:
+Add BayesianBinner class, which will eventually move to evtbin, and which
+performs the Bayesian block bin definitions for binned data.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue May 10 09:35:06 PDT 2005
+burstFit/burstFit
+
+Added Files:
+	BayesianBinner.h 
+Log Message:
+Add BayesianBinner class, which will eventually move to evtbin, and which
+performs the Bayesian block bin definitions for binned data.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Oct 27 08:16:52 PDT 2004
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Move BayesianBlocker class out of test code into its own files.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Oct 27 08:16:52 PDT 2004
+burstFit/src
+
+Added Files:
+	BayesianBlocker.cxx 
+Log Message:
+Move BayesianBlocker class out of test code into its own files.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Oct 27 08:16:51 PDT 2004
+burstFit/burstFit
+
+Added Files:
+	BayesianBlocker.h 
+Log Message:
+Move BayesianBlocker class out of test code into its own files.
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Oct 27 08:15:31 PDT 2004
+burstFit/burstFit
+
+Log Message:
+Directory /nfs/slac/g/glast/ground/cvs/burstFit/burstFit added to the repository
+
+    *
+------------------------------------------------------------
+User: peachey  Wed Oct 27 07:48:16 PDT 2004
+burstFit/src/test
+
+Removed Files:
+	.test_burstFit.cxx.swp 
+Log Message:
+Remove swap file from repository.
+
+    *
+------------------------------------------------------------
+User: peachey  Thu Oct 21 11:56:36 PDT 2004
+burstFit
+
+Log Message:
+Initial import of A7 (temporal analysis) package.
+
+Status:
+
+Vendor Tag:	GLAST
+Release Tags:	v0
+		
+N burstFit/cmt/requirements
+N burstFit/src/test/.test_burstFit.cxx.swp
+N burstFit/src/test/test_burstFit.cxx
+N burstFit/data/binData1039.fits
+N burstFit/data/binData1406.fits
+N burstFit/data/binData2193.fits
+N burstFit/data/binData2197.fits
+N burstFit/data/binData2387.fits
+N burstFit/data/binData2665.fits
+N burstFit/data/binData2711.fits
+N burstFit/data/binData2863.fits
+N burstFit/data/binData3256.fits
+N burstFit/data/binData3257.fits
+N burstFit/data/binData5387.fits
+N burstFit/data/binData5415.fits
+N burstFit/data/binData6147.fits
+N burstFit/data/binData6414.fits
+N burstFit/data/binData6504.fits
+N burstFit/data/binData764.fits
+N burstFit/doc/release.notes
+
+No conflicts created by this import
+
+    *

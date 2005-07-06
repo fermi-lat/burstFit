@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Jul  6 10:03:40 PDT 2005
+burstFit/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Use st_stream for output, and add main gtburstfit executable.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jul  6 10:03:18 PDT 2005
 burstFit/burstFit
 

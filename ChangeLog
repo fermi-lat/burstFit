@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed Jul  6 10:03:18 PDT 2005
+burstFit/burstFit
+
+Modified Files:
+	BurstModel.h 
+Log Message:
+Add shift operator for outputing parameters. Use methods from
+base class optimizers::Function for parameter access.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jul  6 08:37:13 PDT 2005
 burstFit/pfiles
 

@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed Jul  6 10:06:23 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Use parameter file to determine whether to plot. Add support for GBM data,
+and tweak output.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jul  6 10:04:40 PDT 2005
 burstFit/src
 

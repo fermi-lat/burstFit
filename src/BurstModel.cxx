@@ -4,8 +4,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
+
+#include "burstFit/BurstModel.h"
 
 #include "evtbin/Binner.h"
 #include "evtbin/Hist1D.h"
@@ -13,12 +17,10 @@
 #include "optimizers/Parameter.h"
 #include "optimizers/dArg.h"
 
-#include "burstFit/BurstModel.h"
-
-#include <iostream>
+#include "st_stream/Stream.h"
 
 namespace {
-  enum { Amplitude, Origin, Coeff1, Coeff2, NumParam };
+  enum { Amplitude, Time0, Tau1, Tau2, NumParPerPeak };
 }
 
 namespace burstFit {
@@ -26,14 +28,25 @@ namespace burstFit {
   const double BurstModel::s_fract_threshold = .05;
 
   BurstModel::BurstModel(const FitPar_t & parameter): m_peak_index(), m_valley_index() {
-    setParameters(parameter);
+    if (1 != (parameter.size() % 4))
+      throw std::logic_error("BurstModel::BurstModel(parameter): There must be 4 parameters per peak, plus one background term.");
+
+    setMaxNumParams(parameter.size());
+    setParams(const_cast<FitPar_t &>(parameter));
+
+    m_funcType = Addend;
+    m_argType = "dArg";
+    m_genericName = "BurstModel";
   }
 
   BurstModel::BurstModel(const evtbin::Hist1D * hist): m_peak_index(), m_valley_index() {
     findPeaks(hist);
-    FitPar_t parameter(m_peak_index.size() * NumParam + 1, 0.);
-    guessInitialParameters(hist, parameter);
-    setParameters(parameter);
+    guessInitialParameters(hist, m_parameter);
+    setMaxNumParams(m_parameter.size());
+
+    m_funcType = Addend;
+    m_argType = "dArg";
+    m_genericName = "BurstModel";
   }
 
   double BurstModel::value(optimizers::Arg & x) const {
@@ -43,11 +56,11 @@ namespace burstFit {
     double value = 0.;
     for (size_t index = 0; index != m_parameter.size() / 4; ++index) {
       // The form of this computation is taken from dofit_prodexpback.pro.
-      double t = abscissa - m_parameter[4 * index + Origin].getTrueValue();
+      double t = abscissa - m_parameter[4 * index + Time0].getTrueValue();
       if (t <= 0.) continue;
       double amplitude = m_parameter[4 * index + Amplitude].getTrueValue();
-      double coeff1 = m_parameter[4 * index + Coeff1].getTrueValue();
-      double coeff2 = m_parameter[4 * index + Coeff2].getTrueValue();
+      double coeff1 = m_parameter[4 * index + Tau1].getTrueValue();
+      double coeff2 = m_parameter[4 * index + Tau2].getTrueValue();
 
       double mu = sqrt(coeff1 / coeff2);
       // In findPVs, lambda was used to help compute parameters. Do not use lambda here, because 2 * mu can
@@ -78,11 +91,11 @@ namespace burstFit {
     size_t index;
     ss >> index;
 
-    double t = abscissa - m_parameter[4 * index + Origin].getTrueValue();
+    double t = abscissa - m_parameter[4 * index + Time0].getTrueValue();
     if (t <= 0.) return 0.;
     double amplitude = m_parameter[4 * index + Amplitude].getTrueValue();
-    double coeff1 = m_parameter[4 * index + Coeff1].getTrueValue();
-    double coeff2 = m_parameter[4 * index + Coeff2].getTrueValue();
+    double coeff1 = m_parameter[4 * index + Tau1].getTrueValue();
+    double coeff2 = m_parameter[4 * index + Tau2].getTrueValue();
 
     double mu = sqrt(coeff1 / coeff2);
     // In findPVs, lambda was used to help compute parameters. Do not use lambda here, because 2 * mu can
@@ -95,13 +108,26 @@ namespace burstFit {
 
     double partial = 0.;
     if (std::string::npos != par_name.find("Amp")) partial = factor / amplitude;
-    else if (std::string::npos != par_name.find("Origin")) partial = factor * (1. / coeff2 - coeff1 / (t * t));
-    else if (std::string::npos != par_name.find("Coeff1")) partial = factor * (1. / sqrt(coeff1 * coeff2) - 1. / t);
-    else if (std::string::npos != par_name.find("Coeff2")) partial = factor * (t / (coeff2 * coeff2) - mu / coeff2);
+    else if (std::string::npos != par_name.find("Time0")) partial = factor * (1. / coeff2 - coeff1 / (t * t));
+    else if (std::string::npos != par_name.find("Tau1")) partial = factor * (1. / sqrt(coeff1 * coeff2) - 1. / t);
+    else if (std::string::npos != par_name.find("Tau2")) partial = factor * (t / (coeff2 * coeff2) - mu / coeff2);
     return partial;
   }
 
   optimizers::Function * BurstModel::clone() const { return new BurstModel(*this); }
+
+  st_stream::OStream & BurstModel::write(st_stream::OStream & os) const {
+    for (unsigned int index = 0; index != m_parameter.size() / 4; ++index) {
+      os << "Peak " << index + 1 << ":" << std::endl;
+      //os << std::right();
+      os.width(17); os << "Amplitude = " << m_parameter[4 * index + Amplitude].getTrueValue() << std::endl;
+      os.width(17); os << "Time0 = " << m_parameter[4 * index + Time0].getTrueValue() << std::endl;
+      os.width(17); os << "Tau1 = " << m_parameter[4 * index + Tau1].getTrueValue() << std::endl;
+      os.width(17); os << "Tau2 = " << m_parameter[4 * index + Tau2].getTrueValue() << std::endl;
+    }
+    os.width(17); os << "Background = " << m_parameter.back().getTrueValue();
+    return os;
+  }
 
   void BurstModel::findPeaks(const evtbin::Hist1D * hist) {
     m_peak_index.clear();
@@ -191,6 +217,8 @@ namespace burstFit {
   }
 
   void BurstModel::guessInitialParameters(const evtbin::Hist1D * hist, FitPar_t & parameter) const {
+    using namespace optimizers;
+    parameter.clear();
     if (!hist->getBinners().empty() && hist->getBinners().front()->getNumBins() >= 3) {
       // For now, take background to be the average of the first and last bin, just
       // like in findPeaks.
@@ -200,80 +228,46 @@ namespace burstFit {
       double last_bin_val = (*hist)[num_bins - 1];
       double background = .5 * (first_bin_val + last_bin_val);
 
+      parameter.resize(m_peak_index.size() * NumParPerPeak + 1);
       for (IndexCont_t::size_type term_index = 0; term_index != m_peak_index.size(); ++term_index) {
         // Some local aliases to improve readability.
         FitPar_t::size_type par_index = term_index * 4;
         Index_t peak_index = m_peak_index[term_index];
         Index_t valley_index = m_valley_index[term_index];
 
+        // String used to name parameters for this peak.
+        std::ostringstream os;
+        os << "_" << term_index;
+
         // Guessed amplitude is just the height above background.
-        parameter[par_index + Amplitude] = (*hist)[peak_index] - background;
+        double amplitude = (*hist)[peak_index] - background;
+        parameter[par_index + Amplitude] = Parameter("Amp" + os.str(), amplitude, true);
+        parameter[par_index + Amplitude].setBounds(0., 2. * amplitude);
+
         // Guessed peak center is the point between valley and peak at which the
         // block value rises above the first block's value.
-        for (IndexCont_t::size_type index = valley_index; index != peak_index; ++index) {
-          if ((*hist)[index] > first_bin_val) {
-            parameter[par_index + Origin] = binner->getInterval(index).midpoint();
-            break;
-          }
-        }
+        IndexCont_t::size_type center_index = valley_index;
+        for (; center_index < peak_index - 1 && (*hist)[center_index] <= first_bin_val; ++center_index) {}
+        double origin = binner->getInterval(center_index).midpoint();
+        parameter[par_index + Time0] = Parameter("Time0" + os.str(), origin, true);
+        parameter[par_index + Time0].setBounds(binner->getInterval(valley_index).begin(), binner->getInterval(peak_index).end());
 
-        // Guessed time constants are the time difference between Origin and the valley.
-        parameter[par_index + Coeff1] = binner->getInterval(peak_index).midpoint() - parameter[par_index + Origin];
-        parameter[par_index + Coeff2] = parameter[par_index + Coeff1];
+        // Guessed time constants are the time differences between peak and origin.
+        double coeff = binner->getInterval(peak_index).midpoint() - origin;
+        parameter[par_index + Tau1] = Parameter("Tau1" + os.str(), coeff, true);
+        parameter[par_index + Tau1].setBounds(0., 3. * coeff);
+        parameter[par_index + Tau2] = Parameter("Tau2" + os.str(), coeff, true);
+        parameter[par_index + Tau2].setBounds(0., 3. * coeff);
 
-std::clog << "fit_par[Amplitude] is " << parameter[par_index + Amplitude] << std::endl;
-std::clog << "fit_par[Origin] is " << parameter[par_index + Origin] << std::endl;
-std::clog << "fit_par[Coeff1] is " << parameter[par_index + Coeff1] << std::endl;
-std::clog << "fit_par[Coeff2] is " << parameter[par_index + Coeff2] << std::endl;
       }
       // Guessed background is the same background used throughout.
-      parameter.back() = background;
+      parameter.back() = Parameter("Bckgnd", background, true);
+      parameter.back().setBounds(0., 3. * background);
 
-std::clog << "init_background is " << parameter.back() << std::endl;
     }
   }
 
-  void BurstModel::setParameters(const FitPar_t & parameter) {
-    using namespace optimizers;
-    if (1 != (parameter.size() % 4))
-        throw std::logic_error("BurstModel::BurstModel(parameter): There must be 4 parameters per peak, plus one background term.");
-    setMaxNumParams(parameter.size() + 1);
-    for (FitPar_t::size_type index = 0; index != parameter.size() / 4; ++index) {
-      FitPar_t::size_type base_index = index * 4;
-      std::ostringstream os;
-      os << "_" << index;
-      addParam("Amp" + os.str(), parameter[base_index + Amplitude], true);
-      addParam("Origin" + os.str(), parameter[base_index + Origin], true);
-      addParam("Coeff1" + os.str(), parameter[base_index + Coeff1], true);
-      addParam("Coeff2" + os.str(), parameter[base_index + Coeff2], true);
-    }
-
-    for (std::vector<Parameter>::iterator itor = m_parameter.begin(); itor != m_parameter.end(); ++itor) {
-      size_t par_num = itor - m_parameter.begin();
-      switch (par_num % 4) {
-        case Amplitude:
-          itor->setBounds(0., itor->getTrueValue() * 3.);
-          break;
-        case Origin:
-          itor->setBounds(itor->getTrueValue() * .5, itor->getTrueValue() * 1.5);
-          break;
-        case Coeff1:
-          itor->setBounds(0., itor->getTrueValue() * 3.);
-          break;
-        case Coeff2:
-          itor->setBounds(0., itor->getTrueValue() * 3.);
-          break;
-        default:
-          break;
-      }
-    }
-
-    addParam("Bckgnd", parameter.back(), true);
-    m_parameter.back().setBounds(0., m_parameter.back().getTrueValue() * 3.);
-
-    m_funcType = Addend;
-    m_argType = "dArg";
-    m_genericName = "BurstModel";
+  st_stream::OStream & operator <<(st_stream::OStream & os, const BurstModel & model) {
+    return model.write(os);
   }
-
 }

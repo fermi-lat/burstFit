@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Wed Jul  6 10:04:40 PDT 2005
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Add shift operator for outputing parameters. Use methods from
+base class optimizers::Function for parameter access. Remove diagnostic output.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jul  6 10:03:40 PDT 2005
 burstFit/cmt
 

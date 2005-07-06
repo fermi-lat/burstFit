@@ -7,6 +7,11 @@ use optimizers *
 use st_app *
 use st_facilities *
 use st_graph *
+use st_stream *
 use tip *
 
 apply_pattern ST_library option="-no_share"
+
+private
+apply_pattern ST_pfiles
+application gtburstfit gtburstfit/*.cxx

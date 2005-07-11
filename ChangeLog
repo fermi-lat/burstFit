@@ -1,5 +1,41 @@
 ------------------------------------------------------------
 TAG
+Tag name: v0r1, operation: add
+Package: burstFit
+User: peachey  Mon Jul 11 10:19:35 2005
+Files:
+  burstFit/ChangeLog  1.36
+  burstFit/burstFit/BurstModel.h  1.2
+  burstFit/burstFit/NegativeStat.h  1.1
+  burstFit/cmt/requirements  1.4
+  burstFit/data/n0_p05.lc  1.1
+  burstFit/data/binData2193.fits  1.2
+  burstFit/data/binData3256.fits  1.2
+  burstFit/data/binData3257.fits  1.2
+  burstFit/data/binData6414.fits  1.2
+  burstFit/data/binData2197.fits  1.2
+  burstFit/data/binData2665.fits  1.2
+  burstFit/data/binData6147.fits  1.2
+  burstFit/data/binData1039.fits  1.2
+  burstFit/data/binData2711.fits  1.2
+  burstFit/data/binData764.fits  1.2
+  burstFit/data/binData5387.fits  1.2
+  burstFit/data/binData2387.fits  1.2
+  burstFit/data/binData1406.fits  1.2
+  burstFit/data/binData2863.fits  1.2
+  burstFit/data/binData5415.fits  1.2
+  burstFit/data/binData6504.fits  1.2
+  burstFit/doc/release.notes  1.1.1.1
+  burstFit/pfiles/gtburstfit.par  1.1
+  burstFit/pfiles/test_burstFit.par  1.1
+  burstFit/src/NegativeStat.cxx  1.1
+  burstFit/src/BurstModel.cxx  1.2
+  burstFit/src/gtburstfit/gtburstfit.cxx  1.1
+  burstFit/src/test/test_burstFit.cxx  1.6
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: v0, operation: add
 Package: burstFit
 User: peachey  Mon Jul 11 10:11:43 2005

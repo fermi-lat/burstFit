@@ -1,4 +1,21 @@
 ------------------------------------------------------------
+TAG
+Tag name: v0, operation: add
+Package: burstFit
+User: peachey  Mon Jul 11 10:11:43 2005
+Files:
+  burstFit/ChangeLog  1.35
+  burstFit/burstFit/BurstModel.h  1.2
+  burstFit/burstFit/NegativeStat.h  1.1
+  burstFit/data/n0_p05.lc  1.1
+  burstFit/pfiles/gtburstfit.par  1.1
+  burstFit/pfiles/test_burstFit.par  1.1
+  burstFit/src/NegativeStat.cxx  1.1
+  burstFit/src/BurstModel.cxx  1.2
+  burstFit/src/gtburstfit/gtburstfit.cxx  1.1
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Jul  6 10:06:48 PDT 2005
 burstFit/src/gtburstfit
 

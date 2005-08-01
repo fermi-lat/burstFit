@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Mon Aug  1 06:46:23 PDT 2005
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Removed const_cast which is no longer necessary due to recent change
+to optimizers::Function.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v0r1, operation: add
 Package: burstFit

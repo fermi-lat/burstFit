@@ -32,7 +32,7 @@ namespace burstFit {
       throw std::logic_error("BurstModel::BurstModel(parameter): There must be 4 parameters per peak, plus one background term.");
 
     setMaxNumParams(parameter.size());
-    setParams(const_cast<FitPar_t &>(parameter));
+    setParams(parameter);
 
     m_funcType = Addend;
     m_argType = "dArg";

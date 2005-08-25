@@ -5,7 +5,10 @@
 
 \verbatim
 --------------------------------------------------------------------------------
-21-oct-2004    v0     JP  Initial import, test code and test files only.
+25-aug-2005         v1  JP Add ncpprior parameter for controlling number of
+                           blocks.
+07-jul-2005       v0r1  JP Add application gtburstfit.
+21-oct-2004         v0  JP Initial import, test code and test files only.
 --------------------------------------------------------------------------------
 \endverbatim
 

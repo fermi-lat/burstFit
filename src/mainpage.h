@@ -60,6 +60,13 @@ evfile [file]
     the data, and the results of the fit. (The fit will
     only be displayed if the fit parameter is set to YES).
 
+(ncpprior = 9.) [double]
+    This number represents a heuristic bias against creating
+    new blocks, used to allow some control over the number
+    of blocks created. If too many (too few) blocks are
+    being created for a given set of data, the user may
+    increase (decrease) this parameter value.
+
 \endverbatim
 
     \section algorithm Algorithms

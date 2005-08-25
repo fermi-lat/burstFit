@@ -56,6 +56,7 @@ void BurstFitApp::run() {
   std::string ev_table = pars["evtable"];
   bool fit = pars["fit"];
   bool plot = pars["plot"];
+  double ncp_prior = pars["ncpprior"];
 
   using namespace burstFit;
   using namespace tip;
@@ -110,7 +111,7 @@ void BurstFitApp::run() {
   }
 
   // Compute Bayesian blocks
-  evtbin::BayesianBinner bb(intervals, cell_pop.begin(), cell_pop_field);
+  evtbin::BayesianBinner bb(intervals, cell_pop.begin(), cell_pop_field, ncp_prior);
 
   // This is based on blocker.pro:
   // tt_blocks = CPs*binscale                  ;convert the CPs to seconds

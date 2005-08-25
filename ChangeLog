@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: peachey  Thu Aug 25 10:11:34 PDT 2005
+burstFit/src
+
+Modified Files:
+	mainpage.h 
+Log Message:
+Add ncpprior parameter.
+
+    *
+------------------------------------------------------------
+User: peachey  Thu Aug 25 10:11:34 PDT 2005
 burstFit/src/gtburstfit
 
 Modified Files:

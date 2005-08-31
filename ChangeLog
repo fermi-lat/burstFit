@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Tue Aug 30 19:21:07 PDT 2005
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Change bounds to handle peaks with amplitudes near 0. Print out
+parameters with greater precision.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1, operation: add
 Package: burstFit

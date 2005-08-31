@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 
@@ -104,28 +105,31 @@ namespace burstFit {
     // double factor = amplitude * lambda * exp(-B);
     double B = coeff1 / t + t / coeff2;
 
-    double factor = amplitude * exp(2. * mu - B);
-
     double partial = 0.;
-    if (std::string::npos != par_name.find("Amp")) partial = factor / amplitude;
-    else if (std::string::npos != par_name.find("Time0")) partial = factor * (1. / coeff2 - coeff1 / (t * t));
-    else if (std::string::npos != par_name.find("Tau1")) partial = factor * (1. / sqrt(coeff1 * coeff2) - 1. / t);
-    else if (std::string::npos != par_name.find("Tau2")) partial = factor * (t / (coeff2 * coeff2) - mu / coeff2);
+    if (std::string::npos != par_name.find("Amp")) {
+      partial = exp(2. * mu - B);
+    } else {
+      double factor = amplitude * exp(2. * mu - B);
+      if (std::string::npos != par_name.find("Time0")) partial = factor * (1. / coeff2 - coeff1 / (t * t));
+      else if (std::string::npos != par_name.find("Tau1")) partial = factor * (1. / sqrt(coeff1 * coeff2) - 1. / t);
+      else if (std::string::npos != par_name.find("Tau2")) partial = factor * (t / (coeff2 * coeff2) - mu / coeff2);
+    }
     return partial;
   }
 
   optimizers::Function * BurstModel::clone() const { return new BurstModel(*this); }
 
   st_stream::OStream & BurstModel::write(st_stream::OStream & os) const {
+    std::streamsize orig_prec = os.precision(std::numeric_limits<double>::digits10);
     for (unsigned int index = 0; index != m_parameter.size() / 4; ++index) {
       os << "Peak " << index + 1 << ":" << std::endl;
-      //os << std::right();
       os.width(17); os << "Amplitude = " << m_parameter[4 * index + Amplitude].getTrueValue() << std::endl;
       os.width(17); os << "Time0 = " << m_parameter[4 * index + Time0].getTrueValue() << std::endl;
       os.width(17); os << "Tau1 = " << m_parameter[4 * index + Tau1].getTrueValue() << std::endl;
       os.width(17); os << "Tau2 = " << m_parameter[4 * index + Tau2].getTrueValue() << std::endl;
     }
     os.width(17); os << "Background = " << m_parameter.back().getTrueValue();
+    os.precision(orig_prec);
     return os;
   }
 
@@ -242,7 +246,10 @@ namespace burstFit {
         // Guessed amplitude is just the height above background.
         double amplitude = (*hist)[peak_index] - background;
         parameter[par_index + Amplitude] = Parameter("Amp" + os.str(), amplitude, true);
-        parameter[par_index + Amplitude].setBounds(0., 2. * amplitude);
+        if (amplitude == 0.)
+          parameter[par_index + Amplitude].setBounds(0., 2. * std::numeric_limits<double>::epsilon());
+        else
+          parameter[par_index + Amplitude].setBounds(0., 2. * amplitude);
 
         // Guessed peak center is the point between valley and peak at which the
         // block value rises above the first block's value.

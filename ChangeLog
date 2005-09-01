@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Aug 31 18:15:34 PDT 2005
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Add test of LAT data.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Aug 31 18:14:11 PDT 2005
 burstFit/data
 

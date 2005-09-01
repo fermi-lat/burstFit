@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+31-aug-2005       v1r1  JP Add support for reading unbinned data.
 25-aug-2005         v1  JP Add ncpprior parameter for controlling number of
                            blocks.
 07-jul-2005       v0r1  JP Add application gtburstfit.

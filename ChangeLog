@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Aug 31 18:23:47 PDT 2005
+burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+Modify to read uunbinned time tagged data also.
+
+    *
+------------------------------------------------------------
 User: peachey  Wed Aug 31 18:15:34 PDT 2005
 burstFit/src/test
 

@@ -78,36 +78,81 @@ void BurstFitApp::run() {
   // Output index used to populate the several data arrays.
   vec_t::size_type out_index = 0;
 
-  // Determine names of fields containing the cell size and content.
-  std::string cell_size_field;
+  // Determine whether there is a "TIME" field.
+  std::string time_field;
+  bool have_time_field = false;
   try {
-    table->getFieldIndex("CELLSIZE");
-    cell_size_field = "CELLSIZE";
+    table->getFieldIndex("TIME");
+    time_field = "TIME";
+    have_time_field = true;
   } catch (const std::exception &) {
-  }
-  if (cell_size_field.empty()) {
-    table->getFieldIndex("TIMEDEL");
-    cell_size_field = "TIMEDEL";
   }
 
-  std::string cell_pop_field;
+  // Determine names of fields containing the cell size and content.
+  std::string cell_size_field;
+  bool have_cell_size_field = false;
   try {
-    table->getFieldIndex("SUM");
-    cell_pop_field = "SUM";
+    table->getFieldIndex("TIMEDEL");
+    cell_size_field = "TIMEDEL";
+    have_cell_size_field = true;
   } catch (const std::exception &) {
   }
-  if (cell_pop_field.empty()) {
+  if (!have_cell_size_field) {
+    try {
+      table->getFieldIndex("CELLSIZE");
+      cell_size_field = "CELLSIZE";
+      have_cell_size_field = true;
+    } catch (const std::exception &) {
+    }
+  }
+
+  if (!have_time_field && !have_cell_size_field)
+    throw std::runtime_error("Could not find field TIME, TIMEDEL or CELLSIZE in file " + ev_file);
+
+  std::string cell_pop_field;
+  bool have_cell_pop_field = false;
+  try {
     table->getFieldIndex("COUNTS");
     cell_pop_field = "COUNTS";
+    have_cell_pop_field = true;
+  } catch (const std::exception &) {
+  }
+  if (!have_cell_pop_field) {
+    try {
+      table->getFieldIndex("SUM");
+      cell_pop_field = "SUM";
+      have_cell_pop_field = true;
+    } catch (const std::exception &) {
+    }
   }
 
   // Iterate over input table, extract data.
   double time = 0.;
+  if (have_time_field) time = (*table->begin())[time_field].get();
+
   for (Table::ConstIterator in_itor = table->begin(); in_itor != table->end(); ++in_itor, ++out_index) {
+    Table::ConstIterator next_itor = in_itor;
+    ++next_itor;
     domain[out_index] = time;
-    time += (*in_itor)[cell_size_field].get();
+    if (have_time_field && (next_itor != table->end())) {
+      time = (*(next_itor))[time_field].get(); 
+    } else if (have_cell_size_field) {
+      time += (*in_itor)[cell_size_field].get();
+    }
     intervals[out_index] = evtbin::Binner::Interval(domain[out_index], time);
-    cell_pop[out_index] = (*in_itor)[cell_pop_field].get();
+    if (have_cell_pop_field) {
+      cell_pop[out_index] = (*in_itor)[cell_pop_field].get();
+    } else {
+      cell_pop[out_index] = 1.;
+    }
+  }
+
+  // If cell sizes were not explicitly supplied, the last data point must be discarded.
+  if (!have_cell_size_field) {
+    std::vector<double>::size_type new_size = cell_pop.size() - 1;
+    domain.resize(new_size);
+    cell_pop.resize(new_size);
+    intervals.resize(new_size);
   }
 
   // Compute Bayesian blocks

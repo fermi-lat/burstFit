@@ -56,6 +56,7 @@ void BurstFitApp::run() {
   std::string ev_table = pars["evtable"];
   bool fit = pars["fit"];
   bool plot = pars["plot"];
+  bool plot_res = pars["plotres"];
   double ncp_prior = pars["ncpprior"];
 
   using namespace burstFit;
@@ -106,8 +107,19 @@ void BurstFitApp::run() {
     }
   }
 
-  if (!have_time_field && !have_cell_size_field)
-    throw std::runtime_error("Could not find field TIME, TIMEDEL or CELLSIZE in file " + ev_file);
+  // If no luck with TIMEDEL or CELLSIZE columns, look for TIMEDEL keyword.
+  bool have_cell_size_keyword = false;
+  double cell_size_keyword = 0.;
+  if (!have_time_field && !have_cell_size_field) {
+    try {
+      table->getHeader()["TIMEDEL"].get(cell_size_keyword);
+      have_cell_size_keyword = true;
+    } catch (const std::exception &) {
+    }
+  }
+
+  if (!have_time_field && !have_cell_size_field && !have_cell_size_keyword)
+    throw std::runtime_error("Unable to determine the sequence of data times; check format of input file " + ev_file);
 
   std::string cell_pop_field;
   bool have_cell_pop_field = false;
@@ -138,6 +150,8 @@ void BurstFitApp::run() {
       time = (*(next_itor))[time_field].get(); 
     } else if (have_cell_size_field) {
       time += (*in_itor)[cell_size_field].get();
+    } else if (have_cell_size_keyword) {
+      time += cell_size_keyword;
     }
     intervals[out_index] = evtbin::Binner::Interval(domain[out_index], time);
     if (have_cell_pop_field) {
@@ -148,7 +162,7 @@ void BurstFitApp::run() {
   }
 
   // If cell sizes were not explicitly supplied, the last data point must be discarded.
-  if (!have_cell_size_field) {
+  if (!have_cell_size_field && !have_cell_size_keyword) {
     std::vector<double>::size_type new_size = cell_pop.size() - 1;
     domain.resize(new_size);
     cell_pop.resize(new_size);
@@ -195,7 +209,10 @@ void BurstFitApp::run() {
   }
 
   vec_t fit_result(domain.size());
-  if (fit) {
+  // Disable fitting for time-tagged data.
+  if (fit && have_time_field) {
+    m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
+  } else if (fit) {
     // Create a model for this data set.
     BurstModel model(&hist);
 
@@ -251,7 +268,14 @@ void BurstFitApp::run() {
     }
   }
 
+  // Compose residuals.
+  vec_t res(domain.size());
+  for (vec_t::size_type index = 0; index != domain.size(); ++index) {
+    res[index] = cell_pop[index] - fit_result[index];
+  }
+
   if (plot) {
+    if (have_time_field) m_os.warn() << "Plotting is not very useful for time-tagged event data." << std::endl;
     // Plot blocks and/or data:
     try {
       // Get plot engine.
@@ -265,6 +289,20 @@ void BurstFitApp::run() {
       if (std::string::npos == begin) begin = 0; else ++begin;
       std::string title = ev_file.substr(begin) + ": Black - data, Red - Bayesian Blocks" + (fit ? ", Green - fit model" : "");
       std::auto_ptr<st_graph::IFrame> pf(engine.createPlotFrame(mf.get(), title, 600, 400));
+  
+      // Create residuals main frame.
+      std::auto_ptr<st_graph::IFrame> res_mf(0);
+  
+      // Create residuals plot frame.
+      std::auto_ptr<st_graph::IFrame> res_pf(0);
+
+      if (plot_res) {
+        // Create main frame.
+        res_mf.reset(engine.createMainFrame(0, 600, 300, "test_burstFit"));
+  
+        // Create plot frame.
+        res_pf.reset(engine.createPlotFrame(res_mf.get(), "Residuals", 600, 300));
+      }
   
       // Plot the data.
       std::auto_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf.get(), "hist",
@@ -284,6 +322,13 @@ void BurstFitApp::run() {
           st_graph::PointSequence<vec_t::iterator>(fit_result.begin(), fit_result.end())));
       }
   
+      // Plot residuals.
+      std::auto_ptr<st_graph::IPlot> res_plot(0);
+      if (plot_res) {
+        res_plot.reset(engine.createPlot(res_pf.get(), "hist",
+          st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
+          st_graph::PointSequence<vec_t::iterator>(res.begin(), res.end())));
+      }
       engine.run();
     } catch (const std::exception & x) {
       m_os.err() << "Could not display plot:" << x.what() << std::endl;

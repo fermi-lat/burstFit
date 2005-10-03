@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Oct  3 10:31:34 PDT 2005
+burstFit/pfiles
+
+Modified Files:
+	gtburstfit.par 
+Log Message:
+Add parameters for manual entry of initial fit parameters.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Oct  3 10:31:06 PDT 2005
 burstFit/burstFit
 

@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: peachey  Mon Oct  3 10:45:20 PDT 2005
+burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+Allow manual input of initial guesses for fit parameters, instead
+of Bayesian Blocks. Prompt conditionally for the new manual
+fit parameters.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Oct  3 10:32:55 PDT 2005
 burstFit/src
 

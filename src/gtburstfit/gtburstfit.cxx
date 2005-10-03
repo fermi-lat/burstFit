@@ -2,6 +2,7 @@
     \brief Main burstFit application.
     \author James Peachey, HEASARC/GSSC
 */
+#include <cctype>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -15,6 +16,7 @@
 
 #include "optimizers/ChiSq.h"
 #include "optimizers/Minuit.h"
+#include "optimizers/Parameter.h"
 #include "optimizers/dArg.h"
 
 #include "st_app/AppParGroup.h"
@@ -39,6 +41,7 @@ class BurstFitApp : public st_app::StApp {
 
     virtual void run();
 
+    virtual void prompt();
   private:
     st_stream::StreamFormatter m_os;
 };
@@ -48,11 +51,12 @@ BurstFitApp::BurstFitApp(): m_os(getName(), "BurstFitApp", 2) {
 
 void BurstFitApp::run() {
   // Prompt for parameters.
+  prompt();
+
   st_app::AppParGroup & pars(getParGroup());
-  pars.Prompt();
-  pars.Save();
 
   std::string ev_file = pars["evfile"];
+  std::string fit_guess = pars["fitguess"];
   std::string ev_table = pars["evtable"];
   bool fit = pars["fit"];
   bool plot = pars["plot"];
@@ -61,6 +65,13 @@ void BurstFitApp::run() {
 
   using namespace burstFit;
   using namespace tip;
+
+  // Interpret fit_guess to determine whether to use Bayesian method.
+  for (std::string::iterator itor = fit_guess.begin(); itor != fit_guess.end(); ++itor) *itor = toupper(*itor);
+  bool use_bayesian_blocks = true;
+  if (fit_guess != "AUTO") {
+    use_bayesian_blocks = false;
+  }
 
   typedef std::vector<double> vec_t;
 
@@ -169,43 +180,51 @@ void BurstFitApp::run() {
     intervals.resize(new_size);
   }
 
-  // Compute Bayesian blocks
-  evtbin::BayesianBinner bb(intervals, cell_pop.begin(), cell_pop_field, ncp_prior);
+  std::auto_ptr<evtbin::BayesianBinner> bb(0);
+  std::auto_ptr<evtbin::Hist1D> hist(0);
+  vec_t time_start;
+  vec_t time_stop;
+  if (use_bayesian_blocks) {
+    // Compute Bayesian blocks.
+    bb.reset(new evtbin::BayesianBinner(intervals, cell_pop.begin(), cell_pop_field, ncp_prior));
+    if (0 == bb.get()) throw std::runtime_error("Could not allocate bayesian block binner");
 
-  // This is based on blocker.pro:
-  // tt_blocks = CPs*binscale                  ;convert the CPs to seconds
-  // num_blocks = n_elements(tt_blocks) - 1
-  // nblocks(itrig) = num_blocks
-  // yy_blocks = fltarr(num_blocks)
-  // pltfact = pltscale/binscale
-
-  // for iblock = 0,num_blocks-1 do begin      ;intensities in counts/plotting bin
-  // yy_blocks(iblock) = total( data(CPs(iblock):CPs(iblock+1)-1) )
-  // yy_blocks(iblock) = pltfact * yy_blocks(iblock) / (CPs(iblock+1) - CPs(iblock))
-  // endfor
-  // yy_blocks = [yy_blocks, 0.]
-
-  // Bin profile into a histogram.
-  evtbin::Hist1D hist(bb);
-  for (vec_t::size_type index = 0; index != cell_pop.size(); ++index) {
-    long block_index = bb.computeIndex(domain[index]);
-    
-    // Weight for histogram is the cell population multiplied by the original bin width and divided by the bayesian block width.
-    hist.fillBin(domain[index],
-      cell_pop[index] * (intervals[index].end() - intervals[index].begin()) / bb.getInterval(block_index).width());
-  }
-
-  // Create arrays to hold the block domain for plotting purposes.
-  vec_t time_start(bb.getNumBins(), 0.);
-  vec_t time_stop(bb.getNumBins(), 0.);
-
-  // Loop over the blocks, storing the start/stop time for each.
-  for (long block_index = 0; block_index != bb.getNumBins(); ++block_index) {
-    evtbin::Binner::Interval interval = bb.getInterval(block_index);
-
-    // Start/stop time is the start/stop point of the interval, scaled by the cell size.
-    time_start[block_index] = interval.begin();
-    time_stop[block_index] = interval.end();
+    // This is based on blocker.pro:
+    // tt_blocks = CPs*binscale                  ;convert the CPs to seconds
+    // num_blocks = n_elements(tt_blocks) - 1
+    // nblocks(itrig) = num_blocks
+    // yy_blocks = fltarr(num_blocks)
+    // pltfact = pltscale/binscale
+  
+    // for iblock = 0,num_blocks-1 do begin      ;intensities in counts/plotting bin
+    // yy_blocks(iblock) = total( data(CPs(iblock):CPs(iblock+1)-1) )
+    // yy_blocks(iblock) = pltfact * yy_blocks(iblock) / (CPs(iblock+1) - CPs(iblock))
+    // endfor
+    // yy_blocks = [yy_blocks, 0.]
+  
+    // Bin profile into a histogram.
+    hist.reset(new evtbin::Hist1D(*bb));
+    if (0 == hist.get()) throw std::runtime_error("Could not allocate histogram to hold bayesian block data");
+    for (vec_t::size_type index = 0; index != cell_pop.size(); ++index) {
+      long block_index = bb->computeIndex(domain[index]);
+      
+      // Weight for histogram is the cell population multiplied by the original bin width and divided by the bayesian block width.
+      hist->fillBin(domain[index],
+        cell_pop[index] * (intervals[index].end() - intervals[index].begin()) / bb->getInterval(block_index).width());
+    }
+  
+    // Create arrays to hold the block domain for plotting purposes.
+    time_start.resize(bb->getNumBins(), 0.);
+    time_stop.resize(bb->getNumBins(), 0.);
+  
+    // Loop over the blocks, storing the start/stop time for each.
+    for (long block_index = 0; block_index != bb->getNumBins(); ++block_index) {
+      evtbin::Binner::Interval interval = bb->getInterval(block_index);
+  
+      // Start/stop time is the start/stop point of the interval, scaled by the cell size.
+      time_start[block_index] = interval.begin();
+      time_stop[block_index] = interval.end();
+    }
   }
 
   vec_t fit_result(domain.size());
@@ -213,19 +232,35 @@ void BurstFitApp::run() {
   if (fit && have_time_field) {
     m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
   } else if (fit) {
+    vec_t guess;
+
     // Create a model for this data set.
-    BurstModel model(&hist);
+    std::auto_ptr<BurstModel> model(0);
 
-    // Compute first peak guess as a function of the domain.
-    vec_t guess(domain.size());
+    if (fit_guess == "AUTO") {
+      // Create a model for this data set.
+      model.reset(new BurstModel(hist.get()));
 
-    for (vec_t::size_type index = 0; index != domain.size(); ++index) {
-      optimizers::dArg arg(domain[index]);
-      guess[index] = model.value(arg);
+      // Compute first peak guess as a function of the domain.
+      guess.resize(domain.size());
+
+      for (vec_t::size_type index = 0; index != domain.size(); ++index) {
+        optimizers::dArg arg(domain[index]);
+        guess[index] = model->value(arg);
+      }
+    } else {
+      BurstModel::FitPar_t model_par(5);
+      model_par[BurstModel::Amplitude] = optimizers::Parameter("Amp_0", pars["amp"], true);
+      model_par[BurstModel::Time0] = optimizers::Parameter("Time0_0", pars["time0"], true);
+      model_par[BurstModel::Tau1] = optimizers::Parameter("Tau1_0", pars["tau1"], true);
+      model_par[BurstModel::Tau2] = optimizers::Parameter("Tau2_0", pars["tau2"], true);
+      model_par[BurstModel::Bckgnd] = optimizers::Parameter("Bckgnd", pars["bckgnd"], true);
+
+      model.reset(new BurstModel(model_par));
     }
   
     // Create optimizing objective function.
-    optimizers::ChiSq chi_sq(domain, cell_pop, &model);
+    optimizers::ChiSq chi_sq(domain, cell_pop, model.get());
   
     // The function to MAXIMIZE is the negative of the chi_sq.
     NegativeStat stat(&chi_sq);
@@ -235,11 +270,11 @@ void BurstFitApp::run() {
   
     // Display fit parameters before fit.
     std::vector<double> coeff;
-    model.getParamValues(coeff);
+    model->getParamValues(coeff);
     m_os.info() << "After initial guess but before any fitting, reduced chi square is " << chi_sq.value() / chi_sq.dof() <<
       std::endl;
     m_os.info() << "Parameters are:" << std::endl;
-    m_os.info() << model << std::endl << std::endl;
+    m_os.info() << *model << std::endl << std::endl;
   
     bool converged = false;
     try {
@@ -250,21 +285,21 @@ void BurstFitApp::run() {
     }
   
     coeff.clear(); // Just in case things are malfunctioning badly.
-    model.getParamValues(coeff);
+    model->getParamValues(coeff);
   
     m_os.info() << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
     m_os.info() << "Parameters are:" << std::endl;
-    m_os.info() << model << std::endl << std::endl;
+    m_os.info() << *model << std::endl << std::endl;
   
     for (vec_t::size_type index = 0; index != domain.size(); ++index) {
       optimizers::dArg arg(domain[index]);
-      fit_result[index] = model.value(arg);
+      fit_result[index] = model->value(arg);
     }
-  } else {
+  } else if (use_bayesian_blocks) {
     m_os.info() << "Bayesian Blocks computed for this data set are:" << std::endl;
     m_os.info() << "Interval           Average Counts" << std::endl;
-    for (long index = 0; index != bb.getNumBins(); ++index) {
-      m_os.info() << "[" << time_start[index] << ", " << time_stop[index] << "]    " << hist[index] << std::endl;
+    for (long index = 0; index != bb->getNumBins(); ++index) {
+      m_os.info() << "[" << time_start[index] << ", " << time_stop[index] << "]    " << (*hist)[index] << std::endl;
     }
   }
 
@@ -310,9 +345,12 @@ void BurstFitApp::run() {
         st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end())));
   
       // Overplot the blocks.
-      std::auto_ptr<st_graph::IPlot> block_plot(engine.createPlot(pf.get(), "hist",
-        st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
-        st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist.begin(), hist.end())));
+      std::auto_ptr<st_graph::IPlot> block_plot(0);
+      if (use_bayesian_blocks) {
+        block_plot.reset(engine.createPlot(pf.get(), "hist",
+          st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
+          st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist->begin(), hist->end())));
+      }
   
       std::auto_ptr<st_graph::IPlot> fit_plot(0);
       if (fit) {
@@ -336,6 +374,27 @@ void BurstFitApp::run() {
     }
   }
 
+}
+
+void BurstFitApp::prompt() {
+  st_app::AppParGroup & pars(getParGroup());
+  pars.Prompt("evfile");
+  pars.Prompt("fitguess");
+  std::string fit_guess = pars["fitguess"];
+  for (std::string::iterator itor = fit_guess.begin(); itor != fit_guess.end(); ++itor) *itor = toupper(*itor);
+  if (fit_guess == "MAN") {
+    pars.Prompt("amp");
+    pars.Prompt("time0");
+    pars.Prompt("tau1");
+    pars.Prompt("tau2");
+    pars.Prompt("bckgnd");
+  }
+  pars.Prompt("evtable");
+  pars.Prompt("fit");
+  pars.Prompt("plot");
+  pars.Prompt("plotres");
+  pars.Prompt("ncpprior");
+  pars.Save();
 }
 
 st_app::StAppFactory<BurstFitApp> g_factory("gtburstfit");

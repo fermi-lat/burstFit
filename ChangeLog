@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Mon Oct  3 10:31:06 PDT 2005
+burstFit/burstFit
+
+Modified Files:
+	BurstModel.h 
+Log Message:
+Move parameter enumerations to the header for the class, and add
+setBounds method for setting bounds for fitting.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Oct  3 06:16:34 PDT 2005
 burstFit/src/gtburstfit
 

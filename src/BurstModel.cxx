@@ -20,10 +20,6 @@
 
 #include "st_stream/Stream.h"
 
-namespace {
-  enum { Amplitude, Time0, Tau1, Tau2, NumParPerPeak };
-}
-
 namespace burstFit {
 
   const double BurstModel::s_fract_threshold = .05;
@@ -33,7 +29,8 @@ namespace burstFit {
       throw std::logic_error("BurstModel::BurstModel(parameter): There must be 4 parameters per peak, plus one background term.");
 
     setMaxNumParams(parameter.size());
-    setParams(parameter);
+    m_parameter = parameter;
+    setBounds(m_parameter);
 
     m_funcType = Addend;
     m_argType = "dArg";
@@ -255,16 +252,16 @@ namespace burstFit {
         // block value rises above the first block's value.
         IndexCont_t::size_type center_index = valley_index;
         for (; center_index < peak_index - 1 && (*hist)[center_index] <= first_bin_val; ++center_index) {}
-        double origin = binner->getInterval(center_index).midpoint();
+        double origin = binner->getInterval(center_index).begin();
         parameter[par_index + Time0] = Parameter("Time0" + os.str(), origin, true);
         parameter[par_index + Time0].setBounds(binner->getInterval(valley_index).begin(), binner->getInterval(peak_index).end());
 
         // Guessed time constants are the time differences between peak and origin.
         double coeff = binner->getInterval(peak_index).midpoint() - origin;
         parameter[par_index + Tau1] = Parameter("Tau1" + os.str(), coeff, true);
-        parameter[par_index + Tau1].setBounds(0., 3. * coeff);
+        parameter[par_index + Tau1].setBounds(0., 10. * coeff);
         parameter[par_index + Tau2] = Parameter("Tau2" + os.str(), coeff, true);
-        parameter[par_index + Tau2].setBounds(0., 3. * coeff);
+        parameter[par_index + Tau2].setBounds(0., 10. * coeff);
 
       }
       // Guessed background is the same background used throughout.
@@ -272,6 +269,36 @@ namespace burstFit {
       parameter.back().setBounds(0., 3. * background);
 
     }
+  }
+
+  void BurstModel::setBounds(FitPar_t & parameter) const {
+    FitPar_t::size_type num_peaks = parameter.size() / NumParPerPeak;
+    if (parameter.size() != num_peaks * NumParPerPeak + 1)
+      throw std::logic_error("Parameter container has wrong number of parameters for model");
+
+    for (FitPar_t::size_type peak_index = 0; peak_index != num_peaks; ++peak_index) {
+      FitPar_t::size_type par_index = peak_index * 4;
+
+      // Set limits on amplitude. Make sure the range of variation is non-0 so fitting engine doesn't gag.
+      double amplitude = parameter[par_index + Amplitude].getTrueValue();
+      if (amplitude == 0.)
+        parameter[par_index + Amplitude].setBounds(0., 2. * std::numeric_limits<double>::epsilon());
+      else
+        parameter[par_index + Amplitude].setBounds(0., 2. * amplitude);
+
+      // Set limits on time origin so that it doesn't move more than 3. * the decay time in either direction.
+      double time0 = parameter[par_index + Time0].getTrueValue();
+      double decay_time = 3. * parameter[par_index + Tau2].getTrueValue();
+      parameter[par_index + Time0].setBounds(time0 - decay_time, time0 + decay_time);
+
+      double coeff = parameter[par_index + Tau1].getTrueValue();
+      parameter[par_index + Tau1].setBounds(0., 10. * coeff);
+      coeff = parameter[par_index + Tau2].getTrueValue();
+      parameter[par_index + Tau2].setBounds(0., 10. * coeff);
+    }
+
+    double background = parameter.back().getTrueValue();
+    parameter.back().setBounds(0., 3. * background);
   }
 
   st_stream::OStream & operator <<(st_stream::OStream & os, const BurstModel & model) {

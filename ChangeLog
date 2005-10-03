@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Oct  3 06:14:34 PDT 2005
+burstFit/pfiles
+
+Modified Files:
+	gtburstfit.par 
+Log Message:
+Add plotres parameter to control whether to plot residuals.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v1r1, operation: add
 Package: burstFit

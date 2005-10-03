@@ -1,4 +1,17 @@
 ------------------------------------------------------------
+User: peachey  Mon Oct  3 06:16:34 PDT 2005
+burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+Allow optional plotting of residuals, controlled by plotres parameter.
+After checking for all columns which could contain time information,
+look for TIMEDEL keyword, and use it for constant time bin size if all
+else fails.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Oct  3 06:14:34 PDT 2005
 burstFit/pfiles
 

@@ -36,6 +36,8 @@ namespace burstFit {
       typedef std::vector<Index_t> IndexCont_t;
       typedef std::vector<optimizers::Parameter> FitPar_t;
 
+      enum Parameter_e { Amplitude, Time0, Tau1, Tau2, NumParPerPeak, Bckgnd = NumParPerPeak };
+
       BurstModel(const FitPar_t & parameter);
 
       BurstModel(const evtbin::Hist1D * hist);
@@ -54,6 +56,8 @@ namespace burstFit {
       virtual void findPeaks(const evtbin::Hist1D * hist);
 
       virtual void guessInitialParameters(const evtbin::Hist1D * hist, FitPar_t & parameter) const;
+
+      void setBounds(FitPar_t & parameter) const;
 
     private:
       IndexCont_t m_peak_index;

@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: peachey  Mon Oct  3 10:32:55 PDT 2005
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Move parameter enumerations to the header for the class, and add
+setBounds method for setting bounds for fitting. Use more generous
+bounds for time parameters in fit.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Oct  3 10:31:34 PDT 2005
 burstFit/pfiles
 

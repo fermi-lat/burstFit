@@ -232,22 +232,12 @@ void BurstFitApp::run() {
   if (fit && have_time_field) {
     m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
   } else if (fit) {
-    vec_t guess;
-
     // Create a model for this data set.
     std::auto_ptr<BurstModel> model(0);
 
     if (fit_guess == "AUTO") {
       // Create a model for this data set.
       model.reset(new BurstModel(hist.get()));
-
-      // Compute first peak guess as a function of the domain.
-      guess.resize(domain.size());
-
-      for (vec_t::size_type index = 0; index != domain.size(); ++index) {
-        optimizers::dArg arg(domain[index]);
-        guess[index] = model->value(arg);
-      }
     } else {
       BurstModel::FitPar_t model_par(5);
       model_par[BurstModel::Amplitude] = optimizers::Parameter("Amp_0", pars["amp"], true);

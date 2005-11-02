@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Wed Nov  2 06:08:44 PST 2005
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Safeguard model values against floating exceptions by replacing 0 with epsilon.
+
+    *
+------------------------------------------------------------
 User: peachey  Mon Oct  3 10:45:20 PDT 2005
 burstFit/src/gtburstfit
 

@@ -60,6 +60,9 @@ namespace burstFit {
       double coeff1 = m_parameter[4 * index + Tau1].getTrueValue();
       double coeff2 = m_parameter[4 * index + Tau2].getTrueValue();
 
+      // Prevent floating exceptions.
+      if (coeff2 == 0.) coeff2 = std::numeric_limits<double>::epsilon();
+
       double mu = sqrt(coeff1 / coeff2);
       // In findPVs, lambda was used to help compute parameters. Do not use lambda here, because 2 * mu can
       // be large enough to blow up the exponential even if 2 * mu - B is not.
@@ -70,6 +73,9 @@ namespace burstFit {
     }
     // Add the flat background, which is the last parameter.
     value += m_parameter.back().getTrueValue();
+
+    // Protect against division by 0.
+    if (value == 0.) value = std::numeric_limits<double>::epsilon();
 
     return value;
   }
@@ -94,6 +100,10 @@ namespace burstFit {
     double amplitude = m_parameter[4 * index + Amplitude].getTrueValue();
     double coeff1 = m_parameter[4 * index + Tau1].getTrueValue();
     double coeff2 = m_parameter[4 * index + Tau2].getTrueValue();
+
+    // Prevent floating exceptions.
+    if (coeff1 == 0.) coeff1 = std::numeric_limits<double>::epsilon();
+    if (coeff2 == 0.) coeff2 = std::numeric_limits<double>::epsilon();
 
     double mu = sqrt(coeff1 / coeff2);
     // In findPVs, lambda was used to help compute parameters. Do not use lambda here, because 2 * mu can
@@ -258,6 +268,7 @@ namespace burstFit {
 
         // Guessed time constants are the time differences between peak and origin.
         double coeff = binner->getInterval(peak_index).midpoint() - origin;
+        if (coeff == 0.) coeff = std::numeric_limits<double>::epsilon();
         parameter[par_index + Tau1] = Parameter("Tau1" + os.str(), coeff, true);
         parameter[par_index + Tau1].setBounds(0., 10. * coeff);
         parameter[par_index + Tau2] = Parameter("Tau2" + os.str(), coeff, true);

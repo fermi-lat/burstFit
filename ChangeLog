@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Fri Nov  4 09:01:43 PST 2005
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Add getNumPeaks and getCoefficient method to simplify getting parameters
+associated with a particular peak.
+
+    *
+------------------------------------------------------------
+User: peachey  Fri Nov  4 09:01:43 PST 2005
 burstFit/burstFit
 
 Modified Files:

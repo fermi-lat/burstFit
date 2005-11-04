@@ -50,6 +50,15 @@ namespace burstFit {
 
       virtual st_stream::OStream & write(st_stream::OStream & os) const;
 
+      /// \brief Return the number of peaks currently in this model.
+      int getNumPeaks() const;
+
+      /** \brief Get the value of a fit coefficient associated with a particular peak.
+          \param peak_index The number of the peak.
+          \param coeff_id The coefficient to return, "Amp", "Time0", "Tau1", "Tau2".
+      */
+      double getCoefficient(int peak_index, const std::string & coeff_id) const;
+
     protected:
       static const double s_fract_threshold;
 

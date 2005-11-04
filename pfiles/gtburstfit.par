@@ -1,5 +1,5 @@
 evfile,         f, a, , , , "Name of file containing events"
-fitguess,       s, a, "AUTO", AUTO|MAN|GRAPH, , "How will initial values for fit be determined"
+fitguess,       s, a, "AUTO", AUTO|MAN|CALC, , "How will initial values for fit be determined"
 amp,            r, a, 0., 0., , "Amplitude of pulse"
 time0,          r, a, 0., , , "Time of pulse"
 tau1,           r, a, 0., 0., , "Rise coefficient"

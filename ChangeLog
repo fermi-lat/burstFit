@@ -1,4 +1,19 @@
 ------------------------------------------------------------
+User: peachey  Fri Nov  4 09:05:16 PST 2005
+burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+Change interpretation of fitguess parameter; give it enumerated range
+AUTO|MAN|CALC. If CALC, Bayesian Blocks are used to calculate starting
+values for fit. In command line mode, AUTO is same as CALC, but in
+GUI mode, AUTO uses the peaks marked on the graph as starting values.
+In MAN mode, one peak only may be entered using the manual entry
+parameters.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri Nov  4 09:04:16 PST 2005
 burstFit/pfiles
 

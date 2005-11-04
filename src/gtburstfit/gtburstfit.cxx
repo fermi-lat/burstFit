@@ -2,8 +2,10 @@
     \brief Main burstFit application.
     \author James Peachey, HEASARC/GSSC
 */
+#include <cassert>
 #include <cctype>
 #include <memory>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -22,6 +24,7 @@
 #include "st_app/AppParGroup.h"
 #include "st_app/StApp.h"
 #include "st_app/StAppFactory.h"
+#include "st_app/StAppGui.h"
 
 #include "st_graph/Engine.h"
 #include "st_graph/IFrame.h"
@@ -36,18 +39,41 @@
 
 class BurstFitApp : public st_app::StApp {
   public:
+    friend class BurstFitGui;
+
     BurstFitApp();
-    virtual ~BurstFitApp() throw() {}
+
+    virtual ~BurstFitApp() throw();
 
     virtual void run();
 
+    virtual void runGui();
+
     virtual void prompt();
+
   private:
     st_stream::StreamFormatter m_os;
+    burstFit::BurstModel * m_model;
+    st_graph::IPlot * m_data_plot;
 };
 
-BurstFitApp::BurstFitApp(): m_os(getName(), "BurstFitApp", 2) {
+class BurstFitGui : public st_app::StAppGui {
+  public:
+    BurstFitGui(BurstFitApp & app);
+
+    virtual void runApp();
+
+    virtual void rightClicked(st_graph::IFrame * f, double x, double y);
+
+  private:
+    burstFit::BurstModel::Parameter_e m_term_id;
+    BurstFitApp * m_burst_fit_app;
+};
+
+BurstFitApp::BurstFitApp(): m_os(getName(), "BurstFitApp", 2), m_model(0), m_data_plot(0) {
 }
+
+BurstFitApp::~BurstFitApp() throw() { delete m_model; }
 
 void BurstFitApp::run() {
   // Prompt for parameters.
@@ -69,7 +95,7 @@ void BurstFitApp::run() {
   // Interpret fit_guess to determine whether to use Bayesian method.
   for (std::string::iterator itor = fit_guess.begin(); itor != fit_guess.end(); ++itor) *itor = toupper(*itor);
   bool use_bayesian_blocks = true;
-  if (fit_guess != "AUTO") {
+  if (fit_guess == "MAN") {
     use_bayesian_blocks = false;
   }
 
@@ -232,13 +258,11 @@ void BurstFitApp::run() {
   if (fit && have_time_field) {
     m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
   } else if (fit) {
-    // Create a model for this data set.
-    std::auto_ptr<BurstModel> model(0);
-
-    if (fit_guess == "AUTO") {
-      // Create a model for this data set.
-      model.reset(new BurstModel(hist.get()));
-    } else {
+    // If calc option is selected, destroy current model first for sure.
+    if ("CALC" == fit_guess) {
+      delete m_model; m_model = 0;
+    } else if ("MAN" == fit_guess) {
+      // Create model from manual inputs.
       BurstModel::FitPar_t model_par(5);
       model_par[BurstModel::Amplitude] = optimizers::Parameter("Amp_0", pars["amp"], true);
       model_par[BurstModel::Time0] = optimizers::Parameter("Time0_0", pars["time0"], true);
@@ -246,11 +270,17 @@ void BurstFitApp::run() {
       model_par[BurstModel::Tau2] = optimizers::Parameter("Tau2_0", pars["tau2"], true);
       model_par[BurstModel::Bckgnd] = optimizers::Parameter("Bckgnd", pars["bckgnd"], true);
 
-      model.reset(new BurstModel(model_par));
+      delete m_model;
+      m_model = new BurstModel(model_par);
+    }
+
+    // if (fit_guess == AUTO or CALC) and no model exists already, create a model.
+    if (0 == m_model) {
+      m_model = new BurstModel(hist.get());
     }
   
     // Create optimizing objective function.
-    optimizers::ChiSq chi_sq(domain, cell_pop, model.get());
+    optimizers::ChiSq chi_sq(domain, cell_pop, m_model);
   
     // The function to MAXIMIZE is the negative of the chi_sq.
     NegativeStat stat(&chi_sq);
@@ -259,12 +289,10 @@ void BurstFitApp::run() {
     optimizers::Minuit opt(stat);
   
     // Display fit parameters before fit.
-    std::vector<double> coeff;
-    model->getParamValues(coeff);
     m_os.info() << "After initial guess but before any fitting, reduced chi square is " << chi_sq.value() / chi_sq.dof() <<
       std::endl;
     m_os.info() << "Parameters are:" << std::endl;
-    m_os.info() << *model << std::endl << std::endl;
+    m_os.info() << *m_model << std::endl << std::endl;
   
     bool converged = false;
     try {
@@ -274,16 +302,13 @@ void BurstFitApp::run() {
       m_os.err() << x.what() << std::endl;
     }
   
-    coeff.clear(); // Just in case things are malfunctioning badly.
-    model->getParamValues(coeff);
-  
     m_os.info() << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
     m_os.info() << "Parameters are:" << std::endl;
-    m_os.info() << *model << std::endl << std::endl;
+    m_os.info() << *m_model << std::endl << std::endl;
   
     for (vec_t::size_type index = 0; index != domain.size(); ++index) {
       optimizers::dArg arg(domain[index]);
-      fit_result[index] = model->value(arg);
+      fit_result[index] = m_model->value(arg);
     }
   } else if (use_bayesian_blocks) {
     m_os.info() << "Bayesian Blocks computed for this data set are:" << std::endl;
@@ -306,15 +331,14 @@ void BurstFitApp::run() {
       // Get plot engine.
       st_graph::Engine & engine(st_graph::Engine::instance());
   
-      // Create main frame.
-      std::auto_ptr<st_graph::IFrame> mf(engine.createMainFrame(0, 600, 400, "gtburstfit"));
-  
-      // Create plot frame.
+      // Format title for plot.
       std::string::size_type begin = ev_file.find_last_of("/\\");
       if (std::string::npos == begin) begin = 0; else ++begin;
       std::string title = ev_file.substr(begin) + ": Black - data, Red - Bayesian Blocks" + (fit ? ", Green - fit model" : "");
-      std::auto_ptr<st_graph::IFrame> pf(engine.createPlotFrame(mf.get(), title, 600, 400));
-  
+
+      // Get plot frame.
+      st_graph::IFrame * pf = getPlotFrame(title);
+
       // Create residuals main frame.
       std::auto_ptr<st_graph::IFrame> res_mf(0);
   
@@ -330,14 +354,16 @@ void BurstFitApp::run() {
       }
   
       // Plot the data.
-      std::auto_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf.get(), "hist",
+//      std::auto_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf, "hist",
+      m_data_plot = engine.createPlot(pf, "hist",
         st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
-        st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end())));
+        st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end()));
   
       // Overplot the blocks.
       std::auto_ptr<st_graph::IPlot> block_plot(0);
       if (use_bayesian_blocks) {
-        block_plot.reset(engine.createPlot(pf.get(), "hist",
+//        block_plot.reset(engine.createPlot(pf, "hist",
+        (engine.createPlot(pf, "hist",
           st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
           st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist->begin(), hist->end())));
       }
@@ -345,11 +371,37 @@ void BurstFitApp::run() {
       std::auto_ptr<st_graph::IPlot> fit_plot(0);
       if (fit) {
         // Overplot the final fit.
-        fit_plot.reset(engine.createPlot(pf.get(), "hist",
+//        fit_plot.reset(engine.createPlot(pf, "hist",
+        (engine.createPlot(pf, "hist",
           st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
           st_graph::PointSequence<vec_t::iterator>(fit_result.begin(), fit_result.end())));
+
       }
   
+      // Display markers showing the model parameters.
+      if (0 != m_model) {
+        double bckgnd = m_model->getParamValue("Bckgnd");
+        for (int index = 0; index != m_model->getNumPeaks(); ++index ) {
+          // Pulse start time = time0
+          optimizers::dArg time0(m_model->getCoefficient(index, "Time0"));
+          m_data_plot->addMarker(time0.getValue(), m_model->value(time0), "Pulse start");
+
+          double tau1 = m_model->getCoefficient(index, "Tau1");
+          double tau2 = m_model->getCoefficient(index, "Tau2");
+
+          // Peak time = time0 + sqrt(tau1 * tau2)
+          optimizers::dArg peak_time(time0.getValue() + sqrt(tau1 * tau2));
+
+          // Peak height = bckgnd + amp
+          optimizers::dArg peak(m_model->getCoefficient(index, "Amp") + bckgnd);
+          m_data_plot->addMarker(peak_time.getValue(), peak.getValue(), "Peak");
+
+          // Decay time = peak time + tau2
+          optimizers::dArg decay_time(peak_time.getValue() + tau2);
+          m_data_plot->addMarker(decay_time.getValue(), m_model->value(decay_time), "Decay");
+        }
+      }
+
       // Plot residuals.
       std::auto_ptr<st_graph::IPlot> res_plot(0);
       if (plot_res) {
@@ -364,6 +416,11 @@ void BurstFitApp::run() {
     }
   }
 
+}
+
+void BurstFitApp::runGui() {
+  if (0 == m_gui) m_gui = new BurstFitGui(*this);
+  m_gui->run();
 }
 
 void BurstFitApp::prompt() {
@@ -385,6 +442,74 @@ void BurstFitApp::prompt() {
   pars.Prompt("plotres");
   pars.Prompt("ncpprior");
   pars.Save();
+}
+
+BurstFitGui::BurstFitGui(BurstFitApp & app): StAppGui(st_graph::Engine::instance(), app),
+  m_term_id(burstFit::BurstModel::Time0),
+  m_burst_fit_app(&app) {}
+
+void BurstFitGui::runApp() {
+  using namespace burstFit;
+  if (0 != m_burst_fit_app->m_model && 0 != m_burst_fit_app->m_data_plot) {
+    // Get markers from the graph.
+    std::vector<st_graph::Marker> marker;
+    m_burst_fit_app->m_data_plot->getMarkers(marker);
+
+    // 3 Markers are used to define one pulse.
+    int num_pulses = marker.size() / 3;
+
+    // There are 4 Parameters per pulse + background.
+    BurstModel::FitPar_t model_par(4 * num_pulses + 1);
+    double bckgnd = m_burst_fit_app->m_model->getParamValue("Bckgnd");
+    for (int ii = 0; ii != num_pulses; ++ii) {
+      std::ostringstream os;
+      os << "_" << ii;
+      // Assume markers are in order: rise = 3 * ii, peak = 3 * ii + 1, decay = 3 * ii + 2.
+      // Time0 = Pulse start time
+      double time0 = marker[3 * ii].m_x;
+      // Amp = Peak height - bckgnd
+      double amp = fabs(marker[3 * ii + 1].m_y - bckgnd);
+      // Tau2 = Decay time - peak time
+      double tau2 = fabs(marker[3 * ii + 2].m_x - time0);
+      if (0. == tau2) tau2 = std::numeric_limits<double>::epsilon();
+      // Tau1 = (Peak time - time0) ^ 2 / tau2
+      double delta_t = (marker[3 * ii + 1].m_x - time0);
+      double tau1 = delta_t * delta_t / tau2;
+      model_par[4 * ii + BurstModel::Amplitude] = optimizers::Parameter("Amp" + os.str(), amp, true);
+      model_par[4 * ii + BurstModel::Time0] = optimizers::Parameter("Time0" + os.str(), time0, true);
+      model_par[4 * ii + BurstModel::Tau1] = optimizers::Parameter("Tau1" + os.str(), tau1, true);
+      model_par[4 * ii + BurstModel::Tau2] = optimizers::Parameter("Tau2" + os.str(), tau2, true);
+    }
+    model_par.back() = optimizers::Parameter("Bckgnd", bckgnd, true);
+    delete m_burst_fit_app->m_model; m_burst_fit_app->m_model = new BurstModel(model_par);
+  }
+  StAppGui::runApp();
+}
+
+void BurstFitGui::rightClicked(st_graph::IFrame * f, double x, double y) {
+  using namespace burstFit;
+  if (f == m_plot_frame && 0 != m_burst_fit_app->m_data_plot) {
+    std::string fit_guess = m_app->getParGroup()["fitguess"];
+    for (std::string::iterator itor = fit_guess.begin(); itor != fit_guess.end(); ++itor) *itor = toupper(*itor);
+    std::string text;
+    switch (m_term_id) {
+      case BurstModel::Time0:
+        m_term_id = BurstModel::Amplitude;
+        text = "Pulse start";
+        break;
+      case BurstModel::Amplitude:
+        m_term_id = BurstModel::Tau2;
+        text = "Peak";
+        break;
+      case BurstModel::Tau2:
+        m_term_id = BurstModel::Time0;
+        text = "Decay";
+        break;
+      default:
+        break;
+    }
+    m_burst_fit_app->m_data_plot->addMarker(x, y, text);
+  }
 }
 
 st_app::StAppFactory<BurstFitApp> g_factory("gtburstfit");

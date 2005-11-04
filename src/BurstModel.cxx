@@ -140,6 +140,20 @@ namespace burstFit {
     return os;
   }
 
+  int BurstModel::getNumPeaks() const {
+    int num_peaks = 0;
+    if (!m_parameter.empty()) {
+      num_peaks = m_parameter.size() / NumParPerPeak;
+    }
+    return num_peaks;
+  }
+
+  double BurstModel::getCoefficient(int peak_index, const std::string & coeff_id) const {
+    std::ostringstream os;
+    os << coeff_id << "_" << peak_index;
+    return getParamValue(os.str());
+  }
+
   void BurstModel::findPeaks(const evtbin::Hist1D * hist) {
     m_peak_index.clear();
     m_valley_index.clear();

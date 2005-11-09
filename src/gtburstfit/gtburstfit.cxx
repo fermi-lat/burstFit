@@ -65,6 +65,8 @@ class BurstFitGui : public st_app::StAppGui {
 
     virtual void rightClicked(st_graph::IFrame * f, double x, double y);
 
+    static int getNextColor(int color);
+
   private:
     burstFit::BurstModel::Parameter_e m_term_id;
     BurstFitApp * m_burst_fit_app;
@@ -381,10 +383,11 @@ void BurstFitApp::run() {
       // Display markers showing the model parameters.
       if (0 != m_model) {
         double bckgnd = m_model->getParamValue("Bckgnd");
-        for (int index = 0; index != m_model->getNumPeaks(); ++index ) {
+        int color = st_graph::Marker::RED;
+        for (int index = 0; index != m_model->getNumPeaks(); ++index, color = BurstFitGui::getNextColor(color)) {
           // Pulse start time = time0
           optimizers::dArg time0(m_model->getCoefficient(index, "Time0"));
-          m_data_plot->addMarker(time0.getValue(), m_model->value(time0), "Pulse start");
+          m_data_plot->addMarker(time0.getValue(), m_model->value(time0), "Pulse start", color);
 
           double tau1 = m_model->getCoefficient(index, "Tau1");
           double tau2 = m_model->getCoefficient(index, "Tau2");
@@ -394,11 +397,11 @@ void BurstFitApp::run() {
 
           // Peak height = bckgnd + amp
           optimizers::dArg peak(m_model->getCoefficient(index, "Amp") + bckgnd);
-          m_data_plot->addMarker(peak_time.getValue(), peak.getValue(), "Peak");
+          m_data_plot->addMarker(peak_time.getValue(), peak.getValue(), "Peak", color);
 
           // Decay time = peak time + tau2
           optimizers::dArg decay_time(peak_time.getValue() + tau2);
-          m_data_plot->addMarker(decay_time.getValue(), m_model->value(decay_time), "Decay");
+          m_data_plot->addMarker(decay_time.getValue(), m_model->value(decay_time), "Decay", color);
         }
       }
 
@@ -420,7 +423,7 @@ void BurstFitApp::run() {
 
 void BurstFitApp::runGui() {
   if (0 == m_gui) m_gui = new BurstFitGui(*this);
-  m_gui->run();
+  StApp::runGui();
 }
 
 void BurstFitApp::prompt() {
@@ -445,8 +448,7 @@ void BurstFitApp::prompt() {
 }
 
 BurstFitGui::BurstFitGui(BurstFitApp & app): StAppGui(st_graph::Engine::instance(), app),
-  m_term_id(burstFit::BurstModel::Time0),
-  m_burst_fit_app(&app) {}
+  m_term_id(burstFit::BurstModel::Time0), m_burst_fit_app(&app) {}
 
 void BurstFitGui::runApp() {
   using namespace burstFit;
@@ -489,11 +491,16 @@ void BurstFitGui::runApp() {
 void BurstFitGui::rightClicked(st_graph::IFrame * f, double x, double y) {
   using namespace burstFit;
   if (f == m_plot_frame && 0 != m_burst_fit_app->m_data_plot) {
-    std::string fit_guess = m_app->getParGroup()["fitguess"];
-    for (std::string::iterator itor = fit_guess.begin(); itor != fit_guess.end(); ++itor) *itor = toupper(*itor);
     std::string text;
+    // Get markers from the graph.
+    std::vector<st_graph::Marker> marker;
+    m_burst_fit_app->m_data_plot->getMarkers(marker);
+  
+    // Color for this marker should be the next one after the last one currently shown.
+    int color = marker.empty() ? st_graph::Marker::BLACK : marker.back().m_color;
     switch (m_term_id) {
       case BurstModel::Time0:
+        color = getNextColor(color);
         m_term_id = BurstModel::Amplitude;
         text = "Pulse start";
         break;
@@ -508,8 +515,24 @@ void BurstFitGui::rightClicked(st_graph::IFrame * f, double x, double y) {
       default:
         break;
     }
-    m_burst_fit_app->m_data_plot->addMarker(x, y, text);
+    m_burst_fit_app->m_data_plot->addMarker(x, y, text, color);
   }
+}
+
+int BurstFitGui::getNextColor(int color) {
+  // Go on to next color.
+  ++color;
+
+  // Make sure color is in range.
+  color %= st_graph::Marker::NUMBER_OF_COLORS;
+
+  // Skip over white and yellow which don't show up well.
+  while (st_graph::Marker::WHITE == color || st_graph::Marker::YELLOW == color) ++color;
+
+  // Make sure color is still in range.
+  color %= st_graph::Marker::NUMBER_OF_COLORS;
+
+  return color;
 }
 
 st_app::StAppFactory<BurstFitApp> g_factory("gtburstfit");

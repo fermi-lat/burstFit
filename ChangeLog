@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Jan 30 06:35:21 PST 2006
+burstFit/cmt
+
+Modified Files:
+	requirements 
+Log Message:
+Add author line.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v2, operation: add
 Package: burstFit

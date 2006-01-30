@@ -1,5 +1,8 @@
 package burstFit
 
+author James Peachey <peachey@milkyway.gsfc.nasa.gov>
+# $Id$
+
 use CLHEP * IExternal
 use STpolicy *
 use evtbin *

@@ -365,25 +365,26 @@ void BurstFitApp::run() {
       std::auto_ptr<st_graph::IPlot> block_plot(0);
       if (use_bayesian_blocks) {
 //        block_plot.reset(engine.createPlot(pf, "hist",
-        (engine.createPlot(pf, "hist",
+        st_graph::IPlot * pp(engine.createPlot(pf, "hist",
           st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
           st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist->begin(), hist->end())));
+        pp->setLineColor(st_graph::Color::eRed);
       }
   
       std::auto_ptr<st_graph::IPlot> fit_plot(0);
       if (fit) {
         // Overplot the final fit.
 //        fit_plot.reset(engine.createPlot(pf, "hist",
-        (engine.createPlot(pf, "hist",
+        st_graph::IPlot * pp(engine.createPlot(pf, "hist",
           st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
           st_graph::PointSequence<vec_t::iterator>(fit_result.begin(), fit_result.end())));
-
+        pp->setLineColor(st_graph::Color::eGreen);
       }
   
       // Display markers showing the model parameters.
       if (0 != m_model) {
         double bckgnd = m_model->getParamValue("Bckgnd");
-        int color = st_graph::Marker::RED;
+        int color = st_graph::Color::eRed;
         for (int index = 0; index != m_model->getNumPeaks(); ++index, color = BurstFitGui::getNextColor(color)) {
           // Pulse start time = time0
           optimizers::dArg time0(m_model->getCoefficient(index, "Time0"));
@@ -497,7 +498,7 @@ void BurstFitGui::rightClicked(st_graph::IFrame * f, double x, double y) {
     m_burst_fit_app->m_data_plot->getMarkers(marker);
   
     // Color for this marker should be the next one after the last one currently shown.
-    int color = marker.empty() ? st_graph::Marker::BLACK : marker.back().m_color;
+    int color = marker.empty() ? st_graph::Color::eBlack : marker.back().m_color;
     switch (m_term_id) {
       case BurstModel::Time0:
         color = getNextColor(color);
@@ -520,19 +521,7 @@ void BurstFitGui::rightClicked(st_graph::IFrame * f, double x, double y) {
 }
 
 int BurstFitGui::getNextColor(int color) {
-  // Go on to next color.
-  ++color;
-
-  // Make sure color is in range.
-  color %= st_graph::Marker::NUMBER_OF_COLORS;
-
-  // Skip over white and yellow which don't show up well.
-  while (st_graph::Marker::WHITE == color || st_graph::Marker::YELLOW == color) ++color;
-
-  // Make sure color is still in range.
-  color %= st_graph::Marker::NUMBER_OF_COLORS;
-
-  return color;
+  return st_graph::Color::nextColor(color);
 }
 
 st_app::StAppFactory<BurstFitApp> g_factory("gtburstfit");

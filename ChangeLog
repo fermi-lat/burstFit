@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Mon Aug 14 10:00:27 PDT 2006
+burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+Change to use new color scheme in st_graph.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v2r0p1, operation: add
 Package: burstFit

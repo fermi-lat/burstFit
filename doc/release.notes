@@ -5,6 +5,7 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+14-aug-2006     v2r0p2  JP Change to use new color scheme in st_graph.
 30-jan-2006     v2r0p1  JP Add author line.
 30-jan-2006         v2  JP Add manual entry using right-clicks to outline pulses.
 31-aug-2005       v1r1  JP Add support for reading unbinned data.

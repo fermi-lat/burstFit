@@ -1,8 +1,7 @@
 /**
     \mainpage burstFit package
 
-    \author  James Peachey peachey@milkyway.gsfc.nasa.gov
-             Lawrence Brown elwin@milkyway.gsfc.nasa.gov
+    \author  James Peachey James.Peachey-1@nasa.gov
 
     \section synopsis Synopsis
     The burstFit package contains a library and an application,

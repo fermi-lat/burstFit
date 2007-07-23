@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Mon Jul 23 09:40:48 PDT 2007
+burstFit/src
+
+Modified Files:
+	mainpage.h 
+Log Message:
+Remove Larry Brown from author list and change James Peachey's
+email address to his One-NASA address.
+
+    *
+------------------------------------------------------------
 TAG
 Tag name: v2r0p2, operation: add
 Package: burstFit

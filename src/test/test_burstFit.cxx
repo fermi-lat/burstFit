@@ -172,12 +172,13 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
     }
   }
 
-  // If cell sizes were not explicitly supplied, the last data point must be discarded.
+  // If cell sizes were not explicitly supplied, the last data point must be discarded, and plotting should be disabled.
   if (!have_cell_size_field) {
     std::vector<double>::size_type new_size = cell_pop.size() - 1;
     domain.resize(new_size);
     cell_pop.resize(new_size);
     intervals.resize(new_size);
+    plot = false;
   }
 
   // Compute blocking needed.
@@ -247,19 +248,25 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
   std::clog << model << "\n" << std::endl;
 
   bool converged = false;
-  try {
-    opt.find_min();
-    converged = true;
-  } catch (const std::exception & x) {
-    std::clog << x.what() << std::endl;
+  if (have_cell_size_field) {
+    try {
+      opt.find_min();
+      converged = true;
+    } catch (const std::exception & x) {
+      std::clog << x.what() << std::endl;
+    }
   }
 
   coeff.clear(); // Just in case things are malfunctioning badly.
   model.getParamValues(coeff);
 
-  std::clog << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
-  std::clog << "Parameters are:" << std::endl;
-  std::clog << model << "\n" << std::endl;
+  if (have_cell_size_field) {
+    std::clog << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
+    std::clog << "Parameters are:" << std::endl;
+    std::clog << model << "\n" << std::endl;
+  } else {
+    std::clog << "Cannot fit TTE data." << std::endl;
+  }
 
   vec_t fit(domain.size());
   for (vec_t::size_type index = 0; index != domain.size(); ++index) {
@@ -301,6 +308,8 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
       std::clog << "Could not display test plots:" << x.what() << std::endl;
       // Ignore errors with the plotting.
     }
+  } else {
+    std::clog << "Plotting suppressed." << std::endl;
   }
 
 }

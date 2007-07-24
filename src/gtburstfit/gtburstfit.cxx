@@ -4,6 +4,7 @@
 */
 #include <cassert>
 #include <cctype>
+#include <cmath>
 #include <memory>
 #include <limits>
 #include <stdexcept>
@@ -257,9 +258,11 @@ void BurstFitApp::run() {
 
   vec_t fit_result(domain.size());
   // Disable fitting for time-tagged data.
+#if 0
   if (fit && !have_cell_size_field) {
     m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
   } else if (fit) {
+#endif
     // If calc option is selected, destroy current model first for sure.
     if ("CALC" == fit_guess) {
       delete m_model; m_model = 0;
@@ -297,24 +300,33 @@ void BurstFitApp::run() {
     m_os.info() << *m_model << std::endl << std::endl;
   
     bool converged = false;
-    try {
-      opt.find_min();
-      converged = true;
-    } catch (const std::exception & x) {
-      m_os.err() << x.what() << std::endl;
+    if (fit) {
+      if (have_cell_size_field) {
+        try {
+          opt.find_min();
+          converged = true;
+        } catch (const std::exception & x) {
+          m_os.err() << x.what() << std::endl;
+        }
+      } else {
+        m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
+      }
     }
   
-    m_os.info() << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
-    m_os.info() << "Parameters are:" << std::endl;
-    m_os.info() << *m_model << std::endl << std::endl;
+    if (fit) {
+      m_os.info() << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
+      m_os.info() << "Parameters are:" << std::endl;
+      m_os.info() << *m_model << std::endl << std::endl;
+    }
   
     for (vec_t::size_type index = 0; index != domain.size(); ++index) {
       optimizers::dArg arg(domain[index]);
       fit_result[index] = m_model->value(arg);
     }
-  } else if (use_bayesian_blocks) {
+
+  if (use_bayesian_blocks) {
     m_os.info() << "Bayesian Blocks computed for this data set are:" << std::endl;
-    m_os.info() << "Interval           Average Counts" << std::endl;
+    m_os.info() << "Interval                     Average Counts" << std::endl;
     for (long index = 0; index != bb->getNumBins(); ++index) {
       m_os.info() << "[" << time_start[index] << ", " << time_stop[index] << "]    " << (*hist)[index] << std::endl;
     }
@@ -413,6 +425,7 @@ void BurstFitApp::run() {
           st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
           st_graph::PointSequence<vec_t::iterator>(res.begin(), res.end())));
       }
+
       engine.run();
     } catch (const std::exception & x) {
       m_os.err() << "Could not display plot:" << x.what() << std::endl;
@@ -471,9 +484,9 @@ void BurstFitGui::runApp() {
       // Time0 = Pulse start time
       double time0 = marker[3 * ii].m_x;
       // Amp = Peak height - bckgnd
-      double amp = fabs(marker[3 * ii + 1].m_y - bckgnd);
+      double amp = std::fabs(marker[3 * ii + 1].m_y - bckgnd);
       // Tau2 = Decay time - peak time
-      double tau2 = fabs(marker[3 * ii + 2].m_x - time0);
+      double tau2 = std::fabs(marker[3 * ii + 2].m_x - time0);
       if (0. == tau2) tau2 = std::numeric_limits<double>::epsilon();
       // Tau1 = (Peak time - time0) ^ 2 / tau2
       double delta_t = (marker[3 * ii + 1].m_x - time0);

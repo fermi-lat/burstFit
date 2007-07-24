@@ -1,5 +1,16 @@
 ------------------------------------------------------------
 User: peachey  Tue Jul 24 12:56:16 PDT 2007
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Use existence of cell size field as indicator that data are binned,
+instead of using existence of TIME field as indicator that they are not.
+
+    *
+------------------------------------------------------------
+User: peachey  Tue Jul 24 12:56:16 PDT 2007
 burstFit/src/gtburstfit
 
 Modified Files:

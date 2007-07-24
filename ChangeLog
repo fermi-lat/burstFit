@@ -1,4 +1,17 @@
 ------------------------------------------------------------
+User: peachey  Tue Jul 24 14:33:23 PDT 2007
+burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+Decouple output from fitting. Always give the current model parameters
+even if fitting is not enabled. Change the way TTE vs. binned data is
+detected; instead of using TIME column to indicate TTE data, use TIMEDEL
+column to indicate binned data.
+
+    *
+------------------------------------------------------------
 User: peachey  Tue Jul 24 12:56:16 PDT 2007
 burstFit/src/test
 

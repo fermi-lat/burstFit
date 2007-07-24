@@ -257,72 +257,66 @@ void BurstFitApp::run() {
   }
 
   vec_t fit_result(domain.size());
-  // Disable fitting for time-tagged data.
-#if 0
-  if (fit && !have_cell_size_field) {
-    m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
-  } else if (fit) {
-#endif
-    // If calc option is selected, destroy current model first for sure.
-    if ("CALC" == fit_guess) {
-      delete m_model; m_model = 0;
-    } else if ("MAN" == fit_guess) {
-      // Create model from manual inputs.
-      BurstModel::FitPar_t model_par(5);
-      model_par[BurstModel::Amplitude] = optimizers::Parameter("Amp_0", pars["amp"], true);
-      model_par[BurstModel::Time0] = optimizers::Parameter("Time0_0", pars["time0"], true);
-      model_par[BurstModel::Tau1] = optimizers::Parameter("Tau1_0", pars["tau1"], true);
-      model_par[BurstModel::Tau2] = optimizers::Parameter("Tau2_0", pars["tau2"], true);
-      model_par[BurstModel::Bckgnd] = optimizers::Parameter("Bckgnd", pars["bckgnd"], true);
+  // If calc option is selected, destroy current model first for sure.
+  if ("CALC" == fit_guess) {
+    delete m_model; m_model = 0;
+  } else if ("MAN" == fit_guess) {
+    // Create model from manual inputs.
+    BurstModel::FitPar_t model_par(5);
+    model_par[BurstModel::Amplitude] = optimizers::Parameter("Amp_0", pars["amp"], true);
+    model_par[BurstModel::Time0] = optimizers::Parameter("Time0_0", pars["time0"], true);
+    model_par[BurstModel::Tau1] = optimizers::Parameter("Tau1_0", pars["tau1"], true);
+    model_par[BurstModel::Tau2] = optimizers::Parameter("Tau2_0", pars["tau2"], true);
+    model_par[BurstModel::Bckgnd] = optimizers::Parameter("Bckgnd", pars["bckgnd"], true);
 
-      delete m_model;
-      m_model = new BurstModel(model_par);
-    }
+    delete m_model;
+    m_model = new BurstModel(model_par);
+  }
 
-    // if (fit_guess == AUTO or CALC) and no model exists already, create a model.
-    if (0 == m_model) {
-      m_model = new BurstModel(hist.get());
+  // if (fit_guess == AUTO or CALC) and no model exists already, create a model.
+  if (0 == m_model) {
+    m_model = new BurstModel(hist.get());
+  }
+
+  // Create optimizing objective function.
+  optimizers::ChiSq chi_sq(domain, cell_pop, m_model);
+
+  // The function to MAXIMIZE is the negative of the chi_sq.
+  NegativeStat stat(&chi_sq);
+
+  // Create optimizer for the objective function.
+  optimizers::Minuit opt(stat);
+
+  // Display fit parameters before fit.
+  m_os.info() << "After initial guess but before any fitting, reduced chi square is " << chi_sq.value() / chi_sq.dof() <<
+    std::endl;
+  m_os.info() << "Parameters are:" << std::endl;
+  m_os.info() << *m_model << std::endl << std::endl;
+
+  bool converged = false;
+  if (fit) {
+    if (have_cell_size_field) {
+      try {
+        opt.find_min();
+        converged = true;
+      } catch (const std::exception & x) {
+        m_os.err() << x.what() << std::endl;
+      }
+    } else {
+      m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
     }
-  
-    // Create optimizing objective function.
-    optimizers::ChiSq chi_sq(domain, cell_pop, m_model);
-  
-    // The function to MAXIMIZE is the negative of the chi_sq.
-    NegativeStat stat(&chi_sq);
-  
-    // Create optimizer for the objective function.
-    optimizers::Minuit opt(stat);
-  
-    // Display fit parameters before fit.
-    m_os.info() << "After initial guess but before any fitting, reduced chi square is " << chi_sq.value() / chi_sq.dof() <<
-      std::endl;
+  }
+
+  if (fit) {
+    m_os.info() << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
     m_os.info() << "Parameters are:" << std::endl;
     m_os.info() << *m_model << std::endl << std::endl;
-  
-    bool converged = false;
-    if (fit) {
-      if (have_cell_size_field) {
-        try {
-          opt.find_min();
-          converged = true;
-        } catch (const std::exception & x) {
-          m_os.err() << x.what() << std::endl;
-        }
-      } else {
-        m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
-      }
-    }
-  
-    if (fit) {
-      m_os.info() << "After fit, reduced chi square is " << chi_sq.value() / chi_sq.dof() << std::endl;
-      m_os.info() << "Parameters are:" << std::endl;
-      m_os.info() << *m_model << std::endl << std::endl;
-    }
-  
-    for (vec_t::size_type index = 0; index != domain.size(); ++index) {
-      optimizers::dArg arg(domain[index]);
-      fit_result[index] = m_model->value(arg);
-    }
+  }
+
+  for (vec_t::size_type index = 0; index != domain.size(); ++index) {
+    optimizers::dArg arg(domain[index]);
+    fit_result[index] = m_model->value(arg);
+  }
 
   if (use_bayesian_blocks) {
     m_os.info() << "Bayesian Blocks computed for this data set are:" << std::endl;

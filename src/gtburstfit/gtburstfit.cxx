@@ -257,7 +257,7 @@ void BurstFitApp::run() {
 
   vec_t fit_result(domain.size());
   // Disable fitting for time-tagged data.
-  if (fit && have_time_field) {
+  if (fit && !have_cell_size_field) {
     m_os.warn() << "Fitting is not currently supported for time-tagged event data." << std::endl;
   } else if (fit) {
     // If calc option is selected, destroy current model first for sure.
@@ -327,7 +327,7 @@ void BurstFitApp::run() {
   }
 
   if (plot) {
-    if (have_time_field) m_os.warn() << "Plotting is not very useful for time-tagged event data." << std::endl;
+    if (!have_cell_size_field) m_os.warn() << "Plotting is not very useful for time-tagged event data." << std::endl;
     // Plot blocks and/or data:
     try {
       // Get plot engine.

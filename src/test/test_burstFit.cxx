@@ -30,6 +30,7 @@
 #include "st_graph/Sequence.h"
 
 #include "st_facilities/Env.h"
+#include "facilities/commonUtilites.h"
 
 #include "st_stream/Stream.h"
 
@@ -59,7 +60,7 @@ class TestBurstFitApp : public st_app::StApp {
 
 void TestBurstFitApp::run() {
   using namespace st_facilities;
-  m_data_dir = Env::getDataDir("burstFit");
+  m_data_dir = facilities::commonUtilities::getDataDir("burstFit");
 
   // Prompt for parameters.
   st_app::AppParGroup & pars(getParGroup());

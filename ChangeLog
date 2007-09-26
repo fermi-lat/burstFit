@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: golpa  Wed Sep 26 12:05:54 PDT 2007
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Use commonUtilities version of joining paths
+    *
+------------------------------------------------------------
 User: golpa  Wed Sep 26 11:56:43 PDT 2007
 burstFit/src/test
 

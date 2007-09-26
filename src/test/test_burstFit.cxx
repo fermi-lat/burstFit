@@ -90,7 +90,7 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
   std::clog << "Test-processing " << file_name << std::endl;
 
   // Open input file.
-  std::auto_ptr<const Table> table(IFileSvc::instance().readTable(Env::appendFileName(m_data_dir, file_name), "1"));
+  std::auto_ptr<const Table> table(IFileSvc::instance().readTable(facilities::commonUtilities::joinPath(m_data_dir, file_name), "1"));
 
   // Cell populations (original data Y axis).
   vec_t cell_pop(table->getNumRecords());

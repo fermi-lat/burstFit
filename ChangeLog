@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: golpa  Wed Sep 26 11:56:43 PDT 2007
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Use commonUtilites to obtain paths
+    *
+------------------------------------------------------------
 TAG
 Tag name: v2r1, operation: add
 Package: burstFit

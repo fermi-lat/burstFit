@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri Oct 19 06:25:42 PDT 2007
+burstFit/src/test
+
+Modified Files:
+	test_burstFit.cxx 
+Log Message:
+Correct typos in usage of commonUtilities.
+
+    *
+------------------------------------------------------------
 User: golpa  Wed Sep 26 12:05:54 PDT 2007
 burstFit/src/test
 

@@ -5,8 +5,9 @@
 #include <cassert>
 #include <cctype>
 #include <cmath>
-#include <memory>
+#include <iomanip>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -74,6 +75,8 @@ class BurstFitGui : public st_app::StAppGui {
 };
 
 BurstFitApp::BurstFitApp(): m_os(getName(), "BurstFitApp", 2), m_model(0), m_data_plot(0) {
+  m_os.info() << std::fixed;
+  m_os.info().precision(8);
 }
 
 BurstFitApp::~BurstFitApp() throw() { delete m_model; }
@@ -320,9 +323,13 @@ void BurstFitApp::run() {
 
   if (use_bayesian_blocks) {
     m_os.info() << "Bayesian Blocks computed for this data set are:" << std::endl;
-    m_os.info() << "Interval                     Average Counts" << std::endl;
+    m_os.info().width(42);
+    m_os.info() << std::left << "Interval" << "Average Counts" << std::endl;
+    m_os.info() << std::right;
     for (long index = 0; index != bb->getNumBins(); ++index) {
-      m_os.info() << "[" << time_start[index] << ", " << time_stop[index] << "]    " << (*hist)[index] << std::endl;
+      m_os.info() << "[" << time_start[index] << ", " << time_stop[index] << "]  ";
+      m_os.info().width(13);
+      m_os.info() << (*hist)[index] << std::endl;
     }
   }
 

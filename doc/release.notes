@@ -5,6 +5,9 @@
 
 \verbatim
 --------------------------------------------------------------------------------
+19-oct-2007       v2r2  JP Adjust output to use sufficient precision for
+                           Bayesian Blocks (JIRA issue GRB #23).
+                           Use commonUtilities for path-related utilities.
 24-jul-2007       v2r1  JP Partially decouple output from fitting; print
                            at least initial parameter values in any case.
                            Improve algorithm for detecting TTE data by detecting

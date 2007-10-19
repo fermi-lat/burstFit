@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: peachey  Fri Oct 19 07:02:58 PDT 2007
+burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+Use more precision in reporting Bayesian Block definitions.
+
+    *
+------------------------------------------------------------
 User: peachey  Fri Oct 19 06:25:42 PDT 2007
 burstFit/src/test
 

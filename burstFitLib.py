@@ -1,5 +1,6 @@
 def generate(env, **kw):
-    env.Tool('addLibrary', library = ['burstFit'], package = 'burstFit')
+    if not kw.get('depsOnly',0):
+        env.Tool('addLibrary', library = ['burstFit'], package = 'burstFit')
     env.Tool('evtbinLib')
     env.Tool('optimizersLib')
     env.Tool('st_appLib')

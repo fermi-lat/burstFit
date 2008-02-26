@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: glastrm  Mon Feb 25 18:59:02 PST 2008
+ScienceTools-scons/burstFit
+
+Modified Files:
+	burstFitLib.py SConscript 
+Log Message:
+Set lib dependencies up for when building libraries
+    *
+------------------------------------------------------------
 TAG
 Tag name: burstFit-02-02-01, operation: add
 Package: burstFit

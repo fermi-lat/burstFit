@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: glastrm  Wed Mar 19 14:30:07 PDT 2008
+ScienceTools-scons/burstFit
+
+Modified Files:
+	SConscript 
+Log Message:
+Register data files
+    *
+------------------------------------------------------------
 TAG
 Tag name: burstFit-02-02-01, operation: mov
 Package: burstFit

@@ -1,4 +1,6 @@
-#$Id: SConscript,v 1.3 2008/02/26 02:59:02 glastrm Exp $
+# $Id: SConscript,v 1.4 2008/03/19 21:30:07 glastrm Exp $
+# Authors: James Peachey <James.Peachey-1@nasa.gov>
+# Version: burstFit-02-02-01
 Import('baseEnv')
 Import('listFiles')
 progEnv = baseEnv.Clone()

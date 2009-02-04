@@ -1,5 +1,45 @@
 ------------------------------------------------------------
 TAG
+Tag name: ScienceTools-09-10-00, operation: add
+Package: burstFit
+User: glastrm  Tue Feb  3 17:34:05 2009
+Files:
+  burstFit/burstFitLib.py  1.2
+  burstFit/ChangeLog  1.90
+  burstFit/SConscript  1.5
+  burstFit/burstFit/BurstModel.h  1.4
+  burstFit/burstFit/NegativeStat.h  1.1
+  burstFit/cmt/requirements  1.6
+  burstFit/data/n0_p05.lc  1.1
+  burstFit/data/binData2193.fits  1.2
+  burstFit/data/binData3256.fits  1.2
+  burstFit/data/binData3257.fits  1.2
+  burstFit/data/binData6414.fits  1.2
+  burstFit/data/binData2197.fits  1.2
+  burstFit/data/binData2665.fits  1.2
+  burstFit/data/binData6147.fits  1.2
+  burstFit/data/binData1039.fits  1.2
+  burstFit/data/binData2711.fits  1.2
+  burstFit/data/binData764.fits  1.2
+  burstFit/data/ft1tiny.fits  1.1
+  burstFit/data/binData5387.fits  1.2
+  burstFit/data/binData2387.fits  1.2
+  burstFit/data/binData1406.fits  1.2
+  burstFit/data/binData2863.fits  1.2
+  burstFit/data/binData5415.fits  1.2
+  burstFit/data/binData6504.fits  1.2
+  burstFit/doc/release.notes  1.9
+  burstFit/pfiles/gtburstfit.par  1.6
+  burstFit/pfiles/test_burstFit.par  1.1
+  burstFit/src/mainpage.h  1.3
+  burstFit/src/NegativeStat.cxx  1.1
+  burstFit/src/BurstModel.cxx  1.7
+  burstFit/src/gtburstfit/gtburstfit.cxx  1.13
+  burstFit/src/test/test_burstFit.cxx  1.11
+
+    *
+------------------------------------------------------------
+TAG
 Tag name: ScienceTools-09-09-00, operation: add
 Package: burstFit
 User: glastrm  Mon Dec 15 21:34:14 2008

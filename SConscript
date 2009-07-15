@@ -1,4 +1,5 @@
-# $Id: SConscript,v 1.4 2008/03/19 21:30:07 glastrm Exp $
+# -*- python -*-
+# $Id: SConscript,v 1.5 2008/06/19 21:50:58 glastrm Exp $
 # Authors: James Peachey <James.Peachey-1@nasa.gov>
 # Version: burstFit-02-02-01
 Import('baseEnv')
@@ -13,5 +14,11 @@ progEnv.Tool('burstFitLib')
 gtburstFitBin = progEnv.Program('gtburstFit', listFiles(['src/gtburstfit/*.cxx']))
 test_burstFitBin = progEnv.Program('test_burstFit', listFiles(['src/test/*.cxx']))
 
-progEnv.Tool('registerObjects', package = 'burstFit', libraries = [burstFitLib], includes = listFiles(['burstFit/*.h']), binaries = [gtburstFitBin],
-             testApps = [test_burstFitBin], pfiles = listFiles(['pfiles/*.par']), data = listFiles(['data/*'], recursive = True))
+progEnv.Tool('registerTargets', package = 'burstFit',
+             staticLibraryCxts = [[burstFitLib,libEnv]],
+             includes = listFiles(['burstFit/*.h']),
+             binaryCxts = [[gtburstFitBin, progEnv]],
+             testAppCxts = [[test_burstFitBin,progEnv]],
+             pfiles = listFiles(['pfiles/*.par']),
+             data = listFiles(['data/*'], recursive = True))
+

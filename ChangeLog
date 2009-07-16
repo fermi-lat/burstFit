@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+TAG
+Tag name: v2r2p2, operation: mov
+Package: burstFit
+User: glastrm  Wed Jul 15 17:34:17 2009
+Files:
+  burstFit/SConscript  1.7
+
+    *
+------------------------------------------------------------
 User: glastrm  Wed Jul 15 17:34:11 PDT 2009
 burstFit
 

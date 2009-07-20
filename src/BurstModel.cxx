@@ -90,7 +90,11 @@ namespace burstFit {
 
     // Pull out the number from the parameter name.
     std::stringstream ss;
-    ss << par_name.substr(4, par_name.find("::"));
+    std::string::size_type underscore_pos = par_name.find("_");
+    if (std::string::npos == underscore_pos) {
+      throw std::logic_error("BurstModel::derivByParam is unable to compute derivative with respect to parameter " + par_name);
+    }
+    ss << par_name.substr(underscore_pos + 1);
 
     size_t index;
     ss >> index;

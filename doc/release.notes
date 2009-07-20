@@ -7,8 +7,6 @@
 --------------------------------------------------------------------------------
  * EOH *
 
-20-jul-2009     v2r2p3  JP Fix bug in the calculation of derivatives in the
-                           burst model.
 15-jul-2009     v2r2p2 jrb Update SConscript; add EOH line to release.notes 
 30-jan-2008     v2r2p1  JP Add SCons files.
 19-oct-2007       v2r2  JP Adjust output to use sufficient precision for

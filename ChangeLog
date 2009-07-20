@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: peachey  Mon Jul 20 12:26:41 PDT 2009
+burstFit/src
+
+Modified Files:
+	BurstModel.cxx 
+Log Message:
+Correct error in derivative calculation. The wrong index was
+being used, thus silently computing the derivative for the wrong peak
+in the fit.
+    *
+------------------------------------------------------------
 TAG
 Tag name: burstFit-02-02-02, operation: add
 Package: burstFit

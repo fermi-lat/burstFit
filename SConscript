@@ -1,5 +1,5 @@
 # -*- python -*-
-# $Id: SConscript,v 1.7 2009/07/16 00:34:11 glastrm Exp $
+# $Id: SConscript,v 1.8 2009/07/20 20:13:14 peachey Exp $
 # Authors: James Peachey <James.Peachey-1@nasa.gov>
 # Version: burstFit-02-02-03
 Import('baseEnv')
@@ -7,7 +7,6 @@ Import('listFiles')
 progEnv = baseEnv.Clone()
 libEnv = baseEnv.Clone()
 
-libEnv.Tool('burstFitLib', depsOnly = 1)
 burstFitLib = libEnv.StaticLibrary('burstFit', listFiles(['src/*.cxx']))
 
 progEnv.Tool('burstFitLib')

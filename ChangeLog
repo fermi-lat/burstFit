@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: jchiang  Tue Mar  3 10:04:58 PST 2015
+ScienceTools-scons/burstFit/src/gtburstfit
+
+Modified Files:
+	gtburstfit.cxx 
+Log Message:
+propagate changes from optimizers::Function refactoring
+    *
+------------------------------------------------------------
+User: jchiang  Tue Mar  3 10:04:58 PST 2015
 ScienceTools-scons/burstFit/src
 
 Modified Files:

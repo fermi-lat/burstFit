@@ -27,10 +27,10 @@ namespace burstFit {
   optimizers::Function * NegativeStat::clone() const { return new NegativeStat(m_stat); }
 
   double NegativeStat::value(optimizers::Arg & x) const {
-    return -dynamic_cast<const optimizers::Function *>(m_stat)->value(x);
+     return -dynamic_cast<const optimizers::Function *>(m_stat)->operator()(x);
   }
 
-  double NegativeStat::derivByParam(optimizers::Arg & x, const std::string & parameter_name) const {
+  double NegativeStat::derivByParamImp(optimizers::Arg & x, const std::string & parameter_name) const {
     return -m_stat->derivByParam(x, parameter_name);
   }
 

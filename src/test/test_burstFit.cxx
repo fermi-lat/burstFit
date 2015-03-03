@@ -229,7 +229,7 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
 
   for (vec_t::size_type index = 0; index != domain.size(); ++index) {
     optimizers::dArg arg(domain[index]);
-    guess[index] = model.value(arg);
+    guess[index] = model(arg);
   }
 
   // Create optimizing objective function.
@@ -272,7 +272,7 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
   vec_t fit(domain.size());
   for (vec_t::size_type index = 0; index != domain.size(); ++index) {
     optimizers::dArg arg(domain[index]);
-    fit[index] = model.value(arg);
+    fit[index] = model(arg);
   }
 
   if (plot) {

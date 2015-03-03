@@ -42,10 +42,6 @@ namespace burstFit {
 
       BurstModel(const evtbin::Hist1D * hist);
 
-      virtual double value(optimizers::Arg & x) const;
-
-      virtual double derivByParam(optimizers::Arg & x, const std::string & par_name) const;
-
       virtual optimizers::Function * clone() const;
 
       virtual st_stream::OStream & write(st_stream::OStream & os) const;
@@ -60,6 +56,10 @@ namespace burstFit {
       double getCoefficient(int peak_index, const std::string & coeff_id) const;
 
     protected:
+      virtual double value(optimizers::Arg & x) const;
+
+      virtual double derivByParamImp(optimizers::Arg & x, const std::string & par_name) const;
+
       static const double s_fract_threshold;
 
       virtual void findPeaks(const evtbin::Hist1D * hist);

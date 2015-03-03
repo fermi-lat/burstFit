@@ -24,27 +24,19 @@ namespace burstFit {
 
   const double BurstModel::s_fract_threshold = .05;
 
-  BurstModel::BurstModel(const FitPar_t & parameter): m_peak_index(), m_valley_index() {
+   BurstModel::BurstModel(const FitPar_t & parameter): optimizers::Function("BurstModel", parameter.size(), ""), m_peak_index(), m_valley_index() {
     if (1 != (parameter.size() % 4))
       throw std::logic_error("BurstModel::BurstModel(parameter): There must be 4 parameters per peak, plus one background term.");
 
-    setMaxNumParams(parameter.size());
     m_parameter = parameter;
     setBounds(m_parameter);
 
-    m_funcType = Addend;
-    m_argType = "dArg";
-    m_genericName = "BurstModel";
   }
 
-  BurstModel::BurstModel(const evtbin::Hist1D * hist): m_peak_index(), m_valley_index() {
-    findPeaks(hist);
+   BurstModel::BurstModel(const evtbin::Hist1D * hist): optimizers::Function("BurstModel", 0, ""), m_peak_index(), m_valley_index() {
     guessInitialParameters(hist, m_parameter);
     setMaxNumParams(m_parameter.size());
-
-    m_funcType = Addend;
-    m_argType = "dArg";
-    m_genericName = "BurstModel";
+    findPeaks(hist);
   }
 
   double BurstModel::value(optimizers::Arg & x) const {
@@ -80,7 +72,7 @@ namespace burstFit {
     return value;
   }
 
-  double BurstModel::derivByParam(optimizers::Arg & x, const std::string & par_name) const {
+  double BurstModel::derivByParamImp(optimizers::Arg & x, const std::string & par_name) const {
     using namespace optimizers;
     if (std::string::npos != par_name.find("Bckgnd")) return 1.;
     double abscissa = dynamic_cast<dArg &>(x).getValue();

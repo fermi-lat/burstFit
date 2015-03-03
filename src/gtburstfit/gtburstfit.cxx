@@ -318,7 +318,7 @@ void BurstFitApp::run() {
 
   for (vec_t::size_type index = 0; index != domain.size(); ++index) {
     optimizers::dArg arg(domain[index]);
-    fit_result[index] = m_model->value(arg);
+    fit_result[index] = m_model->operator()(arg);
   }
 
   if (use_bayesian_blocks) {
@@ -401,7 +401,7 @@ void BurstFitApp::run() {
         for (int index = 0; index != m_model->getNumPeaks(); ++index, color = BurstFitGui::getNextColor(color)) {
           // Pulse start time = time0
           optimizers::dArg time0(m_model->getCoefficient(index, "Time0"));
-          m_data_plot->addMarker(time0.getValue(), m_model->value(time0), "Pulse start", color);
+          m_data_plot->addMarker(time0.getValue(), m_model->operator()(time0), "Pulse start", color);
 
           double tau1 = m_model->getCoefficient(index, "Tau1");
           double tau2 = m_model->getCoefficient(index, "Tau2");
@@ -415,7 +415,7 @@ void BurstFitApp::run() {
 
           // Decay time = peak time + tau2
           optimizers::dArg decay_time(peak_time.getValue() + tau2);
-          m_data_plot->addMarker(decay_time.getValue(), m_model->value(decay_time), "Decay", color);
+          m_data_plot->addMarker(decay_time.getValue(), m_model->operator()(decay_time), "Decay", color);
         }
       }
 

@@ -32,7 +32,7 @@ namespace burstFit {
       virtual double value(optimizers::Arg & x) const;
 
       // From Function:
-      virtual double derivByParam(optimizers::Arg & x, const std::string & parameter_name) const;
+      virtual double derivByParamImp(optimizers::Arg & x, const std::string & parameter_name) const;
 
       // From Function:
       virtual void getFreeDerivs(optimizers::Arg & x, std::vector<double> & derivs) const;

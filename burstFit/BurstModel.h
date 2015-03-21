@@ -56,9 +56,9 @@ namespace burstFit {
       double getCoefficient(int peak_index, const std::string & coeff_id) const;
 
     protected:
-      virtual double value(optimizers::Arg & x) const;
+      virtual double value(const optimizers::Arg & x) const;
 
-      virtual double derivByParamImp(optimizers::Arg & x, const std::string & par_name) const;
+      virtual double derivByParamImp(const optimizers::Arg & x, const std::string & par_name) const;
 
       static const double s_fract_threshold;
 

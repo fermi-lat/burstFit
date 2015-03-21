@@ -39,9 +39,9 @@ namespace burstFit {
     findPeaks(hist);
   }
 
-  double BurstModel::value(optimizers::Arg & x) const {
+  double BurstModel::value(const optimizers::Arg & x) const {
     using namespace optimizers;
-    double abscissa = dynamic_cast<dArg &>(x).getValue();
+    double abscissa = dynamic_cast<const dArg &>(x).getValue();
 
     double value = 0.;
     for (size_t index = 0; index != m_parameter.size() / 4; ++index) {
@@ -72,10 +72,10 @@ namespace burstFit {
     return value;
   }
 
-  double BurstModel::derivByParamImp(optimizers::Arg & x, const std::string & par_name) const {
+  double BurstModel::derivByParamImp(const optimizers::Arg & x, const std::string & par_name) const {
     using namespace optimizers;
     if (std::string::npos != par_name.find("Bckgnd")) return 1.;
-    double abscissa = dynamic_cast<dArg &>(x).getValue();
+    double abscissa = dynamic_cast<const dArg &>(x).getValue();
     // Do this just to make sure the parameter name given is valid. getParam will throw if
     // it is not.
     getParam(par_name);

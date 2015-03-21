@@ -29,13 +29,13 @@ namespace burstFit {
 
     protected:
       // From Function:
-      virtual double value(optimizers::Arg & x) const;
+      virtual double value(const optimizers::Arg & x) const;
 
       // From Function:
-      virtual double derivByParamImp(optimizers::Arg & x, const std::string & parameter_name) const;
+      virtual double derivByParamImp(const optimizers::Arg & x, const std::string & parameter_name) const;
 
       // From Function:
-      virtual void getFreeDerivs(optimizers::Arg & x, std::vector<double> & derivs) const;
+      virtual void getFreeDerivs(const optimizers::Arg & x, std::vector<double> & derivs) const;
 
     private:
       optimizers::Statistic * m_stat;

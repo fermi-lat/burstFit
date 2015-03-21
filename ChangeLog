@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: jchiang  Fri Mar 20 22:37:25 PDT 2015
+ScienceTools-scons/burstFit/src
+
+Modified Files:
+	BurstModel.cxx NegativeStat.cxx 
+Log Message:
+pass optimizers::Arg as const references to value and derivByParamImp member functions
+    *
+------------------------------------------------------------
+User: jchiang  Fri Mar 20 22:37:25 PDT 2015
 ScienceTools-scons/burstFit/burstFit
 
 Modified Files:

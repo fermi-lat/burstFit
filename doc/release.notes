@@ -7,11 +7,13 @@
 --------------------------------------------------------------------------------
  * EOH *
 
+ burstFit-02-03-01 20-Mar-2015 jchiang pass optimizers::Arg as const references in value and derivByParamImp member functions
  burstFit-02-03-00 03-Mar-2015 jchiang optimizers::Function refactoring
  burstFit-02-02-04 22-Feb-2010    jrb correct use of xxLib for libEnv
  burstFit-02-02-03 20-Jul-2009 peachey Fix bug in calculation of derivatives in the burst model.
 15-jul-2009     v2r2p2 jrb Update SConscript; add EOH line to release.notes 
 
+ burstFit-02-03-01 20-Mar-2015 jchiang pass optimizers::Arg as const references in value and derivByParamImp member functions
  burstFit-02-03-00 03-Mar-2015 jchiang optimizers::Function refactoring
  burstFit-02-02-04 22-Feb-2010    jrb correct use of xxLib for libEnv
 30-jan-2008     v2r2p1  JP Add SCons files.

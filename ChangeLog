@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: jchiang  Fri Mar 20 22:37:25 PDT 2015
+ScienceTools-scons/burstFit/burstFit
+
+Modified Files:
+	BurstModel.h NegativeStat.h 
+Log Message:
+pass optimizers::Arg as const references to value and derivByParamImp member functions
+    *
+------------------------------------------------------------
 TAG
 Tag name: burstFit-02-03-00, operation: add
 Package: burstFit

@@ -1,6 +1,6 @@
 # -*- python -*-
-# $Id: SConscript,v 1.11 2015/03/03 18:07:04 jchiang Exp $
-# Authors: James Peachey <James.Peachey-1@nasa.gov>
+# $Id: SConscript,v 1.12 2015/03/21 05:38:57 jchiang Exp $
+# Authors: James Peachey <James.Peachey-1@nasa.gov>, Joe Asercion <joseph.a.asercion@nasa.gov>
 # Version: burstFit-02-03-01
 Import('baseEnv')
 Import('listFiles')

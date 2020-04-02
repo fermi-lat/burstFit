@@ -108,7 +108,7 @@ void BurstFitApp::run() {
   typedef std::vector<double> vec_t;
 
   // Open input file.
-  std::auto_ptr<const Table> table(IFileSvc::instance().readTable(ev_file, ev_table));
+  std::unique_ptr<const Table> table(IFileSvc::instance().readTable(ev_file, ev_table));
 
   // Cell populations (original data Y axis).
   vec_t cell_pop(table->getNumRecords());
@@ -212,8 +212,8 @@ void BurstFitApp::run() {
     intervals.resize(new_size);
   }
 
-  std::auto_ptr<evtbin::BayesianBinner> bb(0);
-  std::auto_ptr<evtbin::Hist1D> hist(0);
+  std::unique_ptr<evtbin::BayesianBinner> bb(nullptr);
+  std::unique_ptr<evtbin::Hist1D> hist(nullptr);
   vec_t time_start;
   vec_t time_stop;
   if (use_bayesian_blocks) {
@@ -355,10 +355,10 @@ void BurstFitApp::run() {
       st_graph::IFrame * pf = getPlotFrame(title);
 
       // Create residuals main frame.
-      std::auto_ptr<st_graph::IFrame> res_mf(0);
+      std::unique_ptr<st_graph::IFrame> res_mf(nullptr);
   
       // Create residuals plot frame.
-      std::auto_ptr<st_graph::IFrame> res_pf(0);
+      std::unique_ptr<st_graph::IFrame> res_pf(nullptr);
 
       if (plot_res) {
         // Create main frame.
@@ -369,13 +369,13 @@ void BurstFitApp::run() {
       }
   
       // Plot the data.
-//      std::auto_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf, "hist",
+//      std::unique_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf, "hist",
       m_data_plot = engine.createPlot(pf, "hist",
         st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
         st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end()));
   
       // Overplot the blocks.
-      std::auto_ptr<st_graph::IPlot> block_plot(0);
+      std::unique_ptr<st_graph::IPlot> block_plot(nullptr);
       if (use_bayesian_blocks) {
 //        block_plot.reset(engine.createPlot(pf, "hist",
         st_graph::IPlot * pp(engine.createPlot(pf, "hist",
@@ -384,7 +384,7 @@ void BurstFitApp::run() {
         pp->setLineColor(st_graph::Color::eRed);
       }
   
-      std::auto_ptr<st_graph::IPlot> fit_plot(0);
+      std::unique_ptr<st_graph::IPlot> fit_plot(nullptr);
       if (fit) {
         // Overplot the final fit.
 //        fit_plot.reset(engine.createPlot(pf, "hist",
@@ -420,7 +420,7 @@ void BurstFitApp::run() {
       }
 
       // Plot residuals.
-      std::auto_ptr<st_graph::IPlot> res_plot(0);
+      std::unique_ptr<st_graph::IPlot> res_plot(nullptr);
       if (plot_res) {
         res_plot.reset(engine.createPlot(res_pf.get(), "hist",
           st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),

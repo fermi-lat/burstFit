@@ -90,7 +90,7 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
   std::clog << "Test-processing " << file_name << std::endl;
 
   // Open input file.
-  std::auto_ptr<const Table> table(IFileSvc::instance().readTable(facilities::commonUtilities::joinPath(m_data_dir, file_name), "1"));
+  std::unique_ptr<const Table> table(IFileSvc::instance().readTable(facilities::commonUtilities::joinPath(m_data_dir, file_name), "1"));
 
   // Cell populations (original data Y axis).
   vec_t cell_pop(table->getNumRecords());
@@ -282,23 +282,23 @@ void TestBurstFitApp::testFile(const std::string & file_name, bool plot) {
       st_graph::Engine & engine(st_graph::Engine::instance());
   
       // Create main frame.
-      std::auto_ptr<st_graph::IFrame> mf(engine.createMainFrame(0, 600, 400, "test_burstFit"));
+      std::unique_ptr<st_graph::IFrame> mf(engine.createMainFrame(0, 600, 400, "test_burstFit"));
   
       // Create plot frame.
-      std::auto_ptr<st_graph::IFrame> pf(engine.createPlotFrame(mf.get(), file_name, 600, 400));
+      std::unique_ptr<st_graph::IFrame> pf(engine.createPlotFrame(mf.get(), file_name, 600, 400));
   
       // Plot the data.
-      std::auto_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf.get(), "hist",
+      std::unique_ptr<st_graph::IPlot> data_plot(engine.createPlot(pf.get(), "hist",
         st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),
         st_graph::PointSequence<vec_t::iterator>(cell_pop.begin(), cell_pop.end())));
   
       // Overplot the blocks.
-      std::auto_ptr<st_graph::IPlot> block_plot(engine.createPlot(pf.get(), "hist",
+      std::unique_ptr<st_graph::IPlot> block_plot(engine.createPlot(pf.get(), "hist",
         st_graph::IntervalSequence<vec_t::iterator>(time_start.begin(), time_start.end(), time_stop.begin()),
         st_graph::PointSequence<evtbin::Hist1D::ConstIterator>(hist.begin(), hist.end())));
   
       // Overplot the final fit.
-      std::auto_ptr<st_graph::IPlot> fit_plot(0);
+      std::unique_ptr<st_graph::IPlot> fit_plot(nullptr);
       if (converged)
         fit_plot.reset(engine.createPlot(pf.get(), "hist",
           st_graph::LowerBoundSequence<vec_t::iterator>(domain.begin(), domain.end()),

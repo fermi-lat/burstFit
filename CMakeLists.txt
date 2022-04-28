@@ -14,11 +14,11 @@ target_include_directories(
 
 ###### Executables ######
 add_executable(gtburstfit src/gtburstfit/gtburstfit.cxx)
-target_link_libraries(gtburstfit PRIVATE burstFit evtbin st_graph st_app st_graph st_stream tip)
+target_link_libraries(gtburstfit PRIVATE burstFit evtbin st_graph st_app st_facilities st_stream tip)
 
 ###### Tests ######
 add_executable(test_burstFit src/test/test_burstFit.cxx)
-target_link_libraries(test_burstFit PRIVATE burstFit evtbin st_graph st_app st_graph st_stream tip)
+target_link_libraries(test_burstFit PRIVATE burstFit evtbin st_graph st_app st_facilities st_stream tip)
 
 ###############################################################
 # Installation

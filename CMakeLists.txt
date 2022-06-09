@@ -1,5 +1,5 @@
 ##### Library ######
-add_library(burstFit STATIC src/BurstModel.cxx src/NegativeStat.cxx)
+add_library(burstFit src/BurstModel.cxx src/NegativeStat.cxx)
 
 target_link_libraries(
   burstFit

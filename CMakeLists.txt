@@ -4,7 +4,7 @@ add_library(burstFit STATIC src/BurstModel.cxx src/NegativeStat.cxx)
 target_link_libraries(
   burstFit
   PUBLIC optimizers
-  PRIVATE evtbin st_app st_stream st_facilities st_graph tip CLHEP::CLHEP
+  PRIVATE evtbin st_app st_stream st_facilities st_graph tip
 )
 
 target_include_directories(

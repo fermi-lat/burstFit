@@ -4,7 +4,7 @@ add_library(burstFit STATIC src/BurstModel.cxx src/NegativeStat.cxx)
 target_link_libraries(
   burstFit
   PUBLIC optimizers
-  PRIVATE evtbin st_app st_stream st_facilities st_graph tip CLHEP::CLHEP
+  PRIVATE evtbin st_app st_stream st_facilities st_graph tip
 )
 
 target_include_directories(
@@ -13,6 +13,8 @@ target_include_directories(
 )
 
 ###### Executables ######
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_executable(gtburstfit src/gtburstfit/gtburstfit.cxx)
 target_link_libraries(gtburstfit PRIVATE burstFit evtbin st_graph st_app st_facilities st_stream tip)
 

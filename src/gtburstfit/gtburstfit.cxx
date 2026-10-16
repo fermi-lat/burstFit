@@ -67,7 +67,7 @@ class BurstFitGui : public st_app::StAppGui {
 
     virtual void rightClicked(st_graph::IFrame * f, double x, double y);
 
-    static int getNextColor(int color);
+    static auto getNextColor(int color) -> int;
 
   private:
     burstFit::BurstModel::Parameter_e m_term_id;
@@ -534,7 +534,7 @@ void BurstFitGui::rightClicked(st_graph::IFrame * f, double x, double y) {
   }
 }
 
-int BurstFitGui::getNextColor(int color) {
+auto BurstFitGui::getNextColor(int color) -> int {
   return st_graph::Color::nextColor(color);
 }
 

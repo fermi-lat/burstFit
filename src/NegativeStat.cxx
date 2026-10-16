@@ -8,7 +8,7 @@ namespace burstFit {
     m_stat->getParams(m_parameter);
   }
 
-  double NegativeStat::value() const {
+  auto NegativeStat::value() const -> double {
     return -m_stat->value();
   }
 
@@ -17,20 +17,20 @@ namespace burstFit {
     for (std::vector<double>::iterator itor = derivs.begin(); itor != derivs.end(); ++itor) *itor = -*itor;
   }
 
-  std::vector<double>::const_iterator NegativeStat::setFreeParamValues_(std::vector<double>::const_iterator it) {
+  auto NegativeStat::setFreeParamValues_(std::vector<double>::const_iterator it) -> std::vector<double>::const_iterator {
     m_stat->setFreeParamValues_(it);
     // Also store the parameters in this object's parameter set, so that other methods from Function such
     // as getFreeParamValues() work correctly .
     return Function::setFreeParamValues_(it);
   }
 
-  optimizers::Function * NegativeStat::clone() const { return new NegativeStat(m_stat); }
+  auto NegativeStat::clone() const -> optimizers::Function * { return new NegativeStat(m_stat); }
 
-  double NegativeStat::value(const optimizers::Arg & x) const {
+  auto NegativeStat::value(const optimizers::Arg & x) const -> double {
      return -dynamic_cast<const optimizers::Function *>(m_stat)->operator()(x);
   }
 
-  double NegativeStat::derivByParamImp(const optimizers::Arg & x, const std::string & parameter_name) const {
+  auto NegativeStat::derivByParamImp(const optimizers::Arg & x, const std::string & parameter_name) const -> double {
     return -m_stat->derivByParam(x, parameter_name);
   }
 

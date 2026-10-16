@@ -38,7 +38,7 @@
 #include "tip/Table.h"
 
 namespace {
-  std::ostream & operator <<(std::ostream & os, const burstFit::BurstModel & model) {
+  auto operator <<(std::ostream & os, const burstFit::BurstModel & model) -> std::ostream & {
     st_stream::OStream st_stream_os(false);
     st_stream_os.connect(os);
     st_stream_os << model;

@@ -39,7 +39,7 @@ namespace burstFit {
     findPeaks(hist);
   }
 
-  double BurstModel::value(const optimizers::Arg & x) const {
+  auto BurstModel::value(const optimizers::Arg & x) const -> double {
     using namespace optimizers;
     double abscissa = dynamic_cast<const dArg &>(x).getValue();
 
@@ -72,7 +72,7 @@ namespace burstFit {
     return value;
   }
 
-  double BurstModel::derivByParamImp(const optimizers::Arg & x, const std::string & par_name) const {
+  auto BurstModel::derivByParamImp(const optimizers::Arg & x, const std::string & par_name) const -> double {
     using namespace optimizers;
     if (std::string::npos != par_name.find("Bckgnd")) return 1.;
     double abscissa = dynamic_cast<const dArg &>(x).getValue();
@@ -120,9 +120,9 @@ namespace burstFit {
     return partial;
   }
 
-  optimizers::Function * BurstModel::clone() const { return new BurstModel(*this); }
+  auto BurstModel::clone() const -> optimizers::Function * { return new BurstModel(*this); }
 
-  st_stream::OStream & BurstModel::write(st_stream::OStream & os) const {
+  auto BurstModel::write(st_stream::OStream & os) const -> st_stream::OStream & {
     std::streamsize orig_prec = os.precision(std::numeric_limits<double>::digits10);
     for (unsigned int index = 0; index != m_parameter.size() / 4; ++index) {
       os << "Peak " << index + 1 << ":" << std::endl;
@@ -136,7 +136,7 @@ namespace burstFit {
     return os;
   }
 
-  int BurstModel::getNumPeaks() const {
+  auto BurstModel::getNumPeaks() const -> int {
     int num_peaks = 0;
     if (!m_parameter.empty()) {
       num_peaks = m_parameter.size() / NumParPerPeak;
@@ -144,7 +144,7 @@ namespace burstFit {
     return num_peaks;
   }
 
-  double BurstModel::getCoefficient(int peak_index, const std::string & coeff_id) const {
+  auto BurstModel::getCoefficient(int peak_index, const std::string & coeff_id) const -> double {
     std::ostringstream os;
     os << coeff_id << "_" << peak_index;
     return getParamValue(os.str());
@@ -322,7 +322,7 @@ namespace burstFit {
     parameter.back().setBounds(0., 3. * background);
   }
 
-  st_stream::OStream & operator <<(st_stream::OStream & os, const BurstModel & model) {
+  auto operator <<(st_stream::OStream & os, const BurstModel & model) -> st_stream::OStream & {
     return model.write(os);
   }
 }
